@@ -1,0 +1,75 @@
+name: Publish to cdnjs
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  cdnjs:
+    runs-on: ubuntu-latest
+    env:
+      CDNJS_PACKAGE_PATH: cdnjs-packages
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.x"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build library
+        run: npm run build
+
+      - name: Read package version
+        id: pkg
+        run: echo "version=$(node -p \"require('./package.json').version\")" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout cdnjs fork
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.CDNJS_FORK_REPO }}
+          path: ${{ env.CDNJS_PACKAGE_PATH }}
+          token: ${{ secrets.CDNJS_TOKEN }}
+          fetch-depth: 0
+
+      - name: Prepare metadata
+        run: node scripts/cdnjs-prepare.mjs ${{ env.CDNJS_PACKAGE_PATH }}
+
+      - name: Commit changes to fork
+        id: commit
+        working-directory: ${{ env.CDNJS_PACKAGE_PATH }}
+        env:
+          BRANCH_NAME: update/lbd-phone-input-${{ steps.pkg.outputs.version }}
+        run: |
+          set -e
+          git config user.name "${{ secrets.CDNJS_GIT_NAME }}"
+          git config user.email "${{ secrets.CDNJS_GIT_EMAIL }}"
+          git checkout -b "$BRANCH_NAME"
+          if git status --short | grep .; then
+            git add packages/@lbd-sh/lbd-phone-input/package.json
+            git commit -m "Add @lbd-sh/lbd-phone-input v${{ steps.pkg.outputs.version }}"
+            git push --set-upstream origin "$BRANCH_NAME"
+            echo "should_pr=true" >> "$GITHUB_OUTPUT"
+            echo "branch=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
+          else
+            echo "No changes to commit"
+            echo "should_pr=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create pull request to cdnjs/packages
+        if: steps.commit.outputs.should_pr == 'true'
+        working-directory: ${{ env.CDNJS_PACKAGE_PATH }}
+        env:
+          GH_TOKEN: ${{ secrets.CDNJS_TOKEN }}
+        run: |
+          gh pr create \
+            --repo cdnjs/packages \
+            --head ${{ secrets.CDNJS_FORK_REPO }}:${{ steps.commit.outputs.branch }} \
+            --base main \
+            --title "Add @lbd-sh/lbd-phone-input v${{ steps.pkg.outputs.version }}" \
+            --body "Automated submission for @lbd-sh/lbd-phone-input v${{ steps.pkg.outputs.version }}."
