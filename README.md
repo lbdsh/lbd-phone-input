@@ -35,6 +35,7 @@ lbd-phone-input is maintained and proudly sponsored by [Transfeero](https://www.
 - 🌍 **Flexible flag rendering** – pick between emoji flags, a high-quality PNG sprite, or hide flags entirely via `flagDisplay`.
 - 🌗 **Adaptive theming** – switch between light, dark, or automatically follow the OS preference with one option.
 - 📞 **Realistic placeholders** – country-specific sample numbers help users understand the expected format instantly.
+- 🧭 **Geo-aware defaults** – call `detectBrowserCountry()` to preselect the user’s dial code in a snap.
 - 🔁 **Automatic sprite distribution** – ships with retina-ready assets and a compact PNG sprite.
 - ⚡ **Instant search & keyboard accessibility** – country lookup by name, ISO code or dial code with full keyboard support.
 - 🧠 **Smart formatting** – auto-format numbers per country mask, fall back to national mode, or take control manually.
@@ -76,7 +77,7 @@ Include the distributed stylesheet, mount the input and listen for the `phone-ch
     <input type="hidden" id="full" name="full_number" />
 
     <script type="module">
-      import { createPhoneInput } from "lbd-phone-input";
+      import { createPhoneInput, detectBrowserCountry } from "lbd-phone-input";
 
       const controller = createPhoneInput("#phone", {
         preferredCountries: ["it", "gb", "us"],
@@ -90,6 +91,8 @@ Include the distributed stylesheet, mount the input and listen for the `phone-ch
           combined: "#full"
         }
       });
+
+      detectBrowserCountry().then((iso2) => iso2 && controller.setCountry(iso2));
 
       document.querySelector("#phone").addEventListener("phone-change", ({ detail }) => {
         console.log("Current state", detail);
@@ -193,6 +196,18 @@ createPhoneInput("#support-it", {
 });
 ```
 
+## Geo detection helper
+
+Use the built-in `detectBrowserCountry()` helper to preselect the locale based on the user's browser settings. You can fall back to a default if the browser blocks access to the API.
+
+```ts
+detectBrowserCountry().then((iso2) => {
+  if (iso2) {
+    controller.setCountry(iso2);
+  }
+});
+```
+
 ## Dropdown behaviour
 
 By default the country picker closes immediately after selecting an option. Set `closeDropdownOnSelection` to `false` if you want to keep the list open (handy for QA or when the dial code is just a reference).
@@ -271,6 +286,21 @@ The distributed stylesheet is built with design tokens you can override per comp
 ## Framework compatibility
 
 The component is plain DOM with namespaced styles, so you can wrap it with Bootstrap form classes or Tailwind utilities without fighting specificity. Override the CSS variables for deeper alignment, or drop it inside design systems such as Chakra, Mantine, DaisyUI, etc.
+
+## Feature coverage vs. popular libraries
+
+| Capability | lbd-phone-input | intl-tel-input | react-phone-input-2 |
+| --- | --- | --- | --- |
+| Emoji & sprite flags | ✅ | ✅ | ✅ |
+| Light / dark / auto theming | ✅ | ❌ | ❌ |
+| Geo-aware default (`detectBrowserCountry`) | ✅ | ⚠️ (requires external code) | ⚠️ (requires external code) |
+| Built-in realistic placeholders | ✅ | ✅ | ⚠️ (basic) |
+| Framework agnostic (vanilla TS) | ✅ | ⚠️ (jQuery-based) | ❌ (React only) |
+| Event payload with dial/national/E.164/theme | ✅ | ❌ | ❌ |
+| Dropdown auto-close toggle | ✅ | ✅ | ⚠️ |
+| CSS variables for customization | ✅ | ❌ | ⚠️ |
+
+`✅` built-in, `⚠️` partial or requires manual wiring, `❌` not available out of the box. In practice, you get all the must-haves without pulling extra dependencies, plus modern niceties like theming, geo detection, and structured events.
 
 ## Examples
 
