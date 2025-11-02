@@ -134,7 +134,16 @@ createPhoneInput("#sprite", { flagDisplay: "sprite" });
 createPhoneInput("#minimal", { flagDisplay: "none" });
 ```
 
-Pass custom sprite URLs through `flagSpriteUrl` and `flagSpriteRetinaUrl` when bundling assets locally.
+### CDN-ready standalone build
+
+The build step emits a ready-to-host bundle under `dist/cdn/` for CDNJS (or any static CDN):
+
+- `dist/cdn/lbd-phone-input.esm.js`
+- `dist/cdn/lbd-phone-input.cjs`
+- `dist/cdn/lbd-phone-input.css`
+- `dist/cdn/assets/` (sprite assets)
+
+Publish those files to CDNJS to offer a standalone script include alongside the npm package.
 
 ### Adaptive themes
 
@@ -340,19 +349,22 @@ Combine them with Tailwind or Bootstrap utility classes to match existing form t
 
 ## Framework integration
 
+Plug the controller into any framework. Below you’ll find reference snippets for React, Vue, Angular, and Svelte; other UI libraries follow the same pattern—create the controller when the component mounts and destroy it when it unmounts.
+
+
 ### React
 
 ```tsx
-import { useEffect, useRef } from "react";
-import { createPhoneInput, detectBrowserCountry, PhoneInputController } from "lbd-phone-input";
-import "lbd-phone-input/dist/styles.css";
+import { useEffect, useRef } from 'react';
+import { createPhoneInput, detectBrowserCountry, type PhoneInputController } from 'lbd-phone-input';
+import 'lbd-phone-input/dist/styles.css';
 
 export function PhoneField() {
   const ref = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!ref.current) return;
-    const controller: PhoneInputController = createPhoneInput(ref.current, { theme: "auto" });
+    const controller: PhoneInputController = createPhoneInput(ref.current, { theme: 'auto' });
     detectBrowserCountry().then((iso2) => iso2 && controller.setCountry(iso2));
     return () => controller.destroy();
   }, []);
@@ -362,6 +374,79 @@ export function PhoneField() {
 ```
 
 ### Vue 3 (Composition API)
+
+```ts
+import { onMounted, onBeforeUnmount, ref } from 'vue';
+import { createPhoneInput, type PhoneInputController } from 'lbd-phone-input';
+import 'lbd-phone-input/dist/styles.css';
+
+export default {
+  setup() {
+    const el = ref<HTMLInputElement | null>(null);
+    let controller: PhoneInputController | null = null;
+
+    onMounted(() => {
+      if (el.value) {
+        controller = createPhoneInput(el.value, { theme: 'dark' });
+      }
+    });
+
+    onBeforeUnmount(() => controller?.destroy());
+
+    return { el };
+  }
+};
+```
+
+### Angular
+
+```ts
+// phone-input.directive.ts
+import { Directive, ElementRef, OnDestroy, OnInit } from '@angular/core';
+import { createPhoneInput, PhoneInputController } from 'lbd-phone-input';
+import 'lbd-phone-input/dist/styles.css';
+
+@Directive({ selector: '[appPhoneInput]' })
+export class PhoneInputDirective implements OnInit, OnDestroy {
+  private controller?: PhoneInputController;
+
+  constructor(private host: ElementRef<HTMLInputElement>) {}
+
+  ngOnInit() {
+    this.controller = createPhoneInput(this.host.nativeElement, { theme: 'auto' });
+  }
+
+  ngOnDestroy() {
+    this.controller?.destroy();
+  }
+}
+```
+
+```html
+<!-- template -->
+<input type="tel" appPhoneInput />
+```
+
+### Svelte
+
+```svelte
+<script lang="ts">
+  import { onMount, onDestroy } from 'svelte';
+  import { createPhoneInput, type PhoneInputController } from 'lbd-phone-input';
+  import 'lbd-phone-input/dist/styles.css';
+
+  let input: HTMLInputElement;
+  let controller: PhoneInputController;
+
+  onMount(() => {
+    controller = createPhoneInput(input, { theme: 'dark' });
+  });
+
+  onDestroy(() => controller?.destroy());
+</script>
+
+<input bind:this={input} type="tel" class="border rounded px-3 py-2" />
+```
 
 ```ts
 import { onMounted, onBeforeUnmount, ref } from "vue";
@@ -410,16 +495,6 @@ export default {
 - The dropdown search field supports typing without losing focus.
 
 ---
-
-## Release workflow
-
-This repository includes a GitHub Actions workflow (`.github/workflows/release.yml`) that:
-
-1. Builds the library on pushes to `master` or manual dispatch.
-2. Computes the next patch version based on the latest npm release.
-3. Bumps `package.json` / `package-lock.json`, publishes to npm, and tags the commit.
-
-Ensure `NPM_TOKEN` is defined in repository secrets to enable publishing.
 
 ---
 

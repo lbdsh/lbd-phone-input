@@ -135,6 +135,43 @@
             <option value="dark">Dark</option>
           </select>
         </label>
+        <label>
+          <span>Language</span>
+          <select id="language-mode">
+            <option value="auto">Auto detect</option>
+            <option value="en">English</option>
+            <option value="it">Italiano</option>
+            <option value="es">Español</option>
+            <option value="fr">Français</option>
+            <option value="de">Deutsch</option>
+            <option value="pt">Português</option>
+            <option value="ru">Русский</option>
+            <option value="zh">中文</option>
+            <option value="ja">日本語</option>
+            <option value="ar">العربية</option>
+          </select>
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" id="national-mode" checked /> National mode
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" id="auto-format" checked /> Auto format
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" id="smart-placeholder" checked /> Smart placeholder
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" id="close-on-select" checked /> Close on selection
+        </label>
+        <fieldset class="pref">
+          <legend>Preferred countries</legend>
+          <label><input type="checkbox" class="pref-check" value="it" checked /> Italy</label>
+          <label><input type="checkbox" class="pref-check" value="us" checked /> United States</label>
+          <label><input type="checkbox" class="pref-check" value="gb" /> United Kingdom</label>
+          <label><input type="checkbox" class="pref-check" value="fr" /> France</label>
+          <label><input type="checkbox" class="pref-check" value="de" /> Germany</label>
+        </fieldset>
+        <button id="reset-options" type="button">Reset configuration</button>
       </section>
       <label class="field">
         Phone number
@@ -165,30 +202,59 @@
         >
       </footer>
     </main>
-    <script type="module">
-      import { createPhoneInput } from "../dist/index.js";
+                <script type="module">
+      import { createPhoneInput, detectBrowserCountry } from "../dist/index.js";
+
       const phoneInput = document.querySelector("#demo-phone");
       const flagModeSelect = document.querySelector("#flag-mode");
       const themeModeSelect = document.querySelector("#theme-mode");
+      const languageSelect = document.querySelector("#language-mode");
+      const nationalModeToggle = document.querySelector("#national-mode");
+      const autoFormatToggle = document.querySelector("#auto-format");
+      const smartPlaceholderToggle = document.querySelector("#smart-placeholder");
+      const closeOnSelectToggle = document.querySelector("#close-on-select");
+      const preferredCheckboxes = Array.from(document.querySelectorAll(".pref-check"));
+      const resetButton = document.querySelector("#reset-options");
       const bindingDial = document.querySelector("#binding-dial");
       const bindingNumber = document.querySelector("#binding-number");
       const bindingCombined = document.querySelector("#binding-combined");
       const log = document.querySelector("#log");
+
+      const defaultPreferred = ["it", "us"];
+
       const initialValue = {
         dialCode: "+39",
         nationalNumber: "3471234567"
       };
+
       const sharedOptions = {
-        preferredCountries: ["it", "es", "fr", "us"],
-        smartPlaceholder: true,
-        nationalMode: true,
-        preventInvalidDialCode: true,
         bindings: {
           dialCode: bindingDial,
           nationalNumber: bindingNumber,
           combined: bindingCombined
-        }
+        },
+        preventInvalidDialCode: true
       };
+
+      function getPreferredCountries() {
+        const selected = preferredCheckboxes
+          .filter((checkbox) => checkbox.checked)
+          .map((checkbox) => checkbox.value);
+        return selected.length ? selected : defaultPreferred;
+      }
+
+      function getDynamicOptions() {
+        const language = languageSelect.value === "auto" ? undefined : languageSelect.value;
+        return {
+          preferredCountries: getPreferredCountries(),
+          nationalMode: nationalModeToggle.checked,
+          autoFormat: autoFormatToggle.checked,
+          smartPlaceholder: smartPlaceholderToggle.checked,
+          closeDropdownOnSelection: closeOnSelectToggle.checked,
+          language
+        };
+      }
+
       function updateLog(state) {
         log.textContent = JSON.stringify(
           {
@@ -206,53 +272,84 @@
           2
         );
       }
-let controller = mount(flagModeSelect.value, initialValue);
-updateLog(controller.getState());
-detectBrowserCountry().then((iso2) => {
-  if (iso2) {
-    controller.setCountry(iso2);
-    updateLog(controller.getState());
-  }
-});
-document.body.dataset.theme = themeModeSelect.value;
-      phoneInput.addEventListener("phone-change", (event) => {
-        console.info("phone-change", event.detail);
-      });
-      flagModeSelect.addEventListener("change", (event) => {
-        const nextMode = event.target.value;
+
+      function mount(flagDisplay, value) {
+        const ctrl = createPhoneInput(phoneInput, {
+          ...sharedOptions,
+          ...getDynamicOptions(),
+          flagDisplay,
+          theme: themeModeSelect.value,
+          value,
+          onChange: updateLog
+        });
+        ctrl.setTheme(themeModeSelect.value);
+        return ctrl;
+      }
+
+      function rebuild() {
         const currentState = controller.getState();
         controller.destroy();
-        controller = mount(nextMode, {
+        controller = mount(flagModeSelect.value, {
           dialCode: currentState.dialCode,
           nationalNumber: currentState.nationalNumber,
           combined: currentState.e164 || currentState.formattedValue
         });
-        controller.setTheme(themeModeSelect.value);
+        updateLog(controller.getState());
+      }
+
+      let controller = mount(flagModeSelect.value, initialValue);
+      updateLog(controller.getState());
+
+      detectBrowserCountry().then((iso2) => {
+        if (iso2) {
+          controller.setCountry(iso2);
+          updateLog(controller.getState());
+        }
+      });
+
+      document.body.dataset.theme = themeModeSelect.value;
+
+      phoneInput.addEventListener("phone-change", (event) => {
+        console.info("phone-change", event.detail);
+      });
+
+      flagModeSelect.addEventListener("change", rebuild);
+
+      themeModeSelect.addEventListener("change", (event) => {
+        controller.setTheme(event.target.value);
+        document.body.dataset.theme = event.target.value;
         updateLog(controller.getState());
       });
-      themeModeSelect.addEventListener("change", (event) => {
-  const nextTheme = event.target.value;
-  controller.setTheme(nextTheme);
-  document.body.dataset.theme = nextTheme;
-  updateLog(controller.getState());
-});
-      // Simulate a backend update after a few seconds.
+
+      nationalModeToggle.addEventListener("change", rebuild);
+      autoFormatToggle.addEventListener("change", rebuild);
+      smartPlaceholderToggle.addEventListener("change", rebuild);
+      closeOnSelectToggle.addEventListener("change", rebuild);
+      languageSelect.addEventListener("change", rebuild);
+      preferredCheckboxes.forEach((checkbox) => checkbox.addEventListener("change", rebuild));
+
+      resetButton.addEventListener("click", () => {
+        flagModeSelect.value = "sprite";
+        themeModeSelect.value = "auto";
+        languageSelect.value = "auto";
+        nationalModeToggle.checked = true;
+        autoFormatToggle.checked = true;
+        smartPlaceholderToggle.checked = true;
+        closeOnSelectToggle.checked = true;
+        preferredCheckboxes.forEach((checkbox) => {
+          checkbox.checked = defaultPreferred.includes(checkbox.value);
+        });
+        document.body.dataset.theme = themeModeSelect.value;
+        controller.destroy();
+        controller = mount(flagModeSelect.value, initialValue);
+        updateLog(controller.getState());
+      });
+
       setTimeout(() => {
         controller.setValue({ combined: "+442079460958" });
         controller.setCountry("gb");
         updateLog(controller.getState());
       }, 4500);
-      function mount(flagDisplay, value) {
-          const ctrl = createPhoneInput(phoneInput, {
-    ...sharedOptions,
-    flagDisplay,
-    theme: themeModeSelect.value,
-    value,
-    onChange: updateLog
-  });
-          ctrl.setTheme(themeModeSelect.value);
-          return ctrl;
-}
     </script>
   </body>
 </html>
