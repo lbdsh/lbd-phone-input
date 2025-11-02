@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://www.transfeero.com" target="_blank" rel="noopener">
-    <img src="https://www.transfeero.com/wp-content/themes/tailpress-master/img/logo_transfeero_final.svg" alt="Transfeero" height="60" />
+    <img src="https://transfeeropublic.s3.eu-west-1.amazonaws.com/logo_transfeero_final_white.png" alt="Transfeero" height="60" />
   </a>
 </p>
 
@@ -30,6 +30,7 @@ lbd-phone-input is maintained and proudly sponsored by [Transfeero](https://www.
 ## Highlights
 
 - 🌍 **Flexible flag rendering** – pick between emoji flags, a high-quality PNG sprite, or hide flags entirely via `flagDisplay`.
+- 🌗 **Adaptive theming** – switch between light, dark, or automatically follow the OS preference with one option.
 - 🔁 **Automatic sprite distribution** – ships with retina-ready assets and class mapping adapted from `intl-tel-input`.
 - ⚡ **Instant search & keyboard accessibility** – country lookup by name, ISO code or dial code with full keyboard support.
 - 🧠 **Smart formatting** – auto-format numbers per country mask, fall back to national mode, or take control manually.
@@ -77,6 +78,7 @@ Include the distributed stylesheet, mount the input and listen for the `phone-ch
         preferredCountries: ["it", "gb", "us"],
         defaultCountry: "it",
         flagDisplay: "sprite", // emoji | sprite | none
+        theme: "auto", // auto | light | dark
         nationalMode: true,
         bindings: {
           dialCode: "#dial",
@@ -149,7 +151,27 @@ const split = input.getPayload("split");
 
 ```ts
 phoneElement.addEventListener("phone-change", ({ detail }) => {
-  saveDraft({ phone: detail.e164, isValid: detail.isValid });
+  saveDraft({ phone: detail.e164, isValid: detail.isValid, theme: detail.theme });
+});
+```
+
+## Light & dark mode
+
+Choose how the component should look with the `theme` option:
+
+```ts
+createPhoneInput("#support", { theme: "light" });
+createPhoneInput("#settings", { theme: "dark" });
+createPhoneInput("#signup", { theme: "auto" }); // follows system preference
+```
+
+You can also switch themes at runtime—perfect for custom toggles or dashboard preferences:
+
+```ts
+const controller = createPhoneInput("#phone", { theme: "auto" });
+
+themeToggle.addEventListener("click", () => {
+  controller.setTheme(themeToggle.checked ? "dark" : "light");
 });
 ```
 
@@ -163,6 +185,7 @@ controller.getDialCode();      // e.g. "+33"
 controller.getNationalNumber();// sanitized national portion
 controller.setCountry("us");   // switch selection
 controller.setValue({ combined: "+4479460958" }); // prefill from backend
+controller.setTheme("dark");     // force dark mode
 controller.getPayload("both"); // split payload + combined string
 controller.destroy();          // restore the original <input>
 ```
@@ -229,15 +252,14 @@ npm run build
 Then open [`examples/basic.html`](examples/basic.html) in your browser. The playground demonstrates:
 
 - Switching between emoji, sprite and flagless modes.
+- Theme toggling between light, dark and auto.
 - Two-way binding with discrete hidden inputs.
 - Programmatic updates via `setValue`/`setCountry`.
-
-## Asset credits
-
-The PNG sprite (`flags.png` and `flags@2x.png`) and position map are adapted from the exceptional [intl-tel-input](https://github.com/jackocnr/intl-tel-input) project (MIT License).
 
 ## Contributing & license
 
 Issues and pull requests are welcome! Run `npm run dev` for watch mode while developing.
 
 This project is released under the [MIT License](LICENSE).
+
+Offered by **LBD Srl** · [www.lbdsh.com](https://www.lbdsh.com)

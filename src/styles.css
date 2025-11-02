@@ -23,6 +23,16 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+.lbd-phone-input--dark {
+  --lbd-bg: #0f172a;
+  --lbd-text-color: #f9fafb;
+  --lbd-muted-color: #a5b4fc;
+  --lbd-border-color: rgba(148, 163, 184, 0.35);
+  --lbd-option-hover: rgba(96, 165, 250, 0.2);
+  --lbd-dropdown-shadow: 0 30px 60px -32px rgba(15, 23, 42, 0.9);
+  --lbd-focus-ring: 0 0 0 3px rgba(96, 165, 250, 0.55);
+}
+
 .lbd-phone-input:focus-within {
   border-color: rgba(59, 130, 246, 0.6);
   box-shadow: var(--lbd-focus-ring);
@@ -46,6 +56,10 @@
 
 .lbd-phone-input__selector:hover {
   background-color: rgba(17, 24, 39, 0.03);
+}
+
+.lbd-phone-input--dark .lbd-phone-input__selector:hover {
+  background-color: rgba(255, 255, 255, 0.06);
 }
 
 .lbd-phone-input__selector:focus-visible {
@@ -102,6 +116,10 @@
   padding: 0.75rem;
 }
 
+.lbd-phone-input--dark .lbd-phone-input__dropdown {
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
 .lbd-phone-input__dropdown--visible {
   opacity: 1;
   visibility: visible;
@@ -114,6 +132,16 @@
   padding: 0.6rem 0.85rem;
   font-size: 0.95rem;
   margin-bottom: 0.75rem;
+}
+
+.lbd-phone-input--dark .lbd-phone-input__search {
+  border-color: rgba(148, 163, 184, 0.4);
+  background-color: rgba(15, 23, 42, 0.65);
+  color: inherit;
+}
+
+.lbd-phone-input--dark .lbd-phone-input__search::placeholder {
+  color: rgba(148, 163, 184, 0.7);
 }
 
 .lbd-phone-input__search:focus {
@@ -140,6 +168,10 @@
   letter-spacing: 0.08em;
   color: var(--lbd-muted-color);
   padding: 0.25rem 0.5rem;
+}
+
+.lbd-phone-input--dark .lbd-phone-input__placeholder {
+  color: rgba(148, 163, 184, 0.6);
 }
 
 .lbd-phone-input__option {
@@ -175,6 +207,11 @@
   width: 20px;
   min-width: 20px;
   height: 15px;
+}
+
+.lbd-phone-input--dark .lbd-phone-input__flag--sprite {
+  background-color: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.3);
 }
 
 .lbd-phone-input__label {

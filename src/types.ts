@@ -13,6 +13,8 @@ export interface Country extends CountryDefinition {
 
 export type FlagDisplayMode = "emoji" | "sprite" | "none";
 
+export type PhoneInputTheme = "light" | "dark" | "auto";
+
 export interface PhoneInputInitialValue {
   dialCode?: string;
   nationalNumber?: string;
@@ -43,6 +45,7 @@ export interface PhoneInputOptions {
   flagDisplay?: FlagDisplayMode;
   flagSpriteUrl?: string;
   flagSpriteRetinaUrl?: string;
+  theme?: PhoneInputTheme;
 }
 
 export interface PhoneInputState {
@@ -53,6 +56,7 @@ export interface PhoneInputState {
   dialCode: string;
   e164: string;
   isValid: boolean;
+  theme: "light" | "dark";
 }
 
 export interface PhonePayload {
@@ -70,6 +74,7 @@ export interface PhoneInputController {
   getNationalNumber(): string;
   setCountry(iso2: string): void;
   setValue(value: PhoneInputInitialValue): void;
+  setTheme(theme: PhoneInputTheme): void;
   format(value: string): string;
   destroy(): void;
 }

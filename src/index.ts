@@ -5,6 +5,7 @@ import {
   FlagDisplayMode,
   PhoneInputController,
   PhoneInputInitialValue,
+  PhoneInputTheme,
   PhoneInputOptions,
   PhoneInputState,
   SubmissionBindings,
@@ -29,8 +30,22 @@ const COMPONENT_CLASS = "lbd-phone-input";
 const DROPDOWN_VISIBLE_CLASS = `${COMPONENT_CLASS}__dropdown--visible`;
 const OPTION_ACTIVE_CLASS = `${COMPONENT_CLASS}__option--active`;
 
-const DEFAULT_OPTIONS: Required<Omit<PhoneInputOptions, "countries">> & {
+const DEFAULT_OPTIONS: {
   countries: Country[];
+  preferredCountries: string[];
+  defaultCountry: string;
+  autoFormat: boolean;
+  nationalMode: boolean;
+  smartPlaceholder: boolean;
+  searchPlaceholder: string;
+  dropdownPlaceholder: string;
+  ariaLabelSelector: string;
+  disableDialCodeInsertion: boolean;
+  preventInvalidDialCode: boolean;
+  flagDisplay: FlagDisplayMode;
+  flagSpriteUrl: string;
+  flagSpriteRetinaUrl: string;
+  theme: PhoneInputTheme;
 } = {
   countries: DEFAULT_COUNTRIES,
   preferredCountries: ["it", "us", "gb", "fr", "de"],
@@ -45,10 +60,11 @@ const DEFAULT_OPTIONS: Required<Omit<PhoneInputOptions, "countries">> & {
   preventInvalidDialCode: true,
   flagDisplay: "emoji",
   flagSpriteUrl: "",
-  flagSpriteRetinaUrl: ""
+  flagSpriteRetinaUrl: "",
+  theme: "auto"
 };
 
-type ResolvedOptions = typeof DEFAULT_OPTIONS & PhoneInputOptions;
+type ResolvedOptions = PhoneInputOptions & typeof DEFAULT_OPTIONS;
 
 const isoToFlag = (iso: string): string =>
   iso
@@ -201,8 +217,13 @@ class VanillaPhoneInput implements PhoneInputController {
   private options: ResolvedOptions;
   private countries: Country[];
   private searchIndex: ReturnType<typeof buildSearchIndex>;
-  private selectedCountry: Country;
+  private selectedCountry!: Country;
   private flagDisplay: FlagDisplayMode;
+  private themeMode: PhoneInputTheme;
+  private currentTheme: "light" | "dark" = "light";
+  private themeQuery?: MediaQueryList;
+  private themeQueryListener?: (event: MediaQueryListEvent) => void;
+  private isReady = false;
   private bindings: BindingElements = {};
   private unsubs: Array<() => void> = [];
   private lastCommittedValue = "";
@@ -229,6 +250,9 @@ class VanillaPhoneInput implements PhoneInputController {
     this.flagDisplay = allowedFlagModes.includes(requestedFlagMode) ? requestedFlagMode : "emoji";
     this.options.flagDisplay = this.flagDisplay;
 
+    this.themeMode = this.options.theme ?? "auto";
+    this.options.theme = this.themeMode;
+
     this.bindings = this.resolveBindings(this.options.bindings);
 
     this.countries = flagSort(
@@ -254,6 +278,12 @@ class VanillaPhoneInput implements PhoneInputController {
       if (this.options.flagSpriteRetinaUrl && this.options.flagSpriteRetinaUrl.trim().length > 0) {
         this.wrapper.style.setProperty("--lbd-flag-sprite-2x-url", `url("${this.options.flagSpriteRetinaUrl}")`);
       }
+    }
+
+    if (this.themeMode === "auto") {
+      this.setupAutoTheme();
+    } else {
+      this.applyTheme(this.themeMode);
     }
 
     this.selectorButton = document.createElement("button");
@@ -288,6 +318,7 @@ class VanillaPhoneInput implements PhoneInputController {
     this.setCountry(initialCountry.iso2);
 
     this.bindEvents();
+    this.isReady = true;
   }
 
   private resolveBindings(bindings?: SubmissionBindings): BindingElements {
@@ -322,6 +353,41 @@ class VanillaPhoneInput implements PhoneInputController {
       nationalNumber,
       combined: combinedCandidate
     };
+  }
+
+  private applyTheme(theme: "light" | "dark"): void {
+    this.wrapper.classList.remove(`${COMPONENT_CLASS}--light`, `${COMPONENT_CLASS}--dark`);
+    this.wrapper.classList.add(`${COMPONENT_CLASS}--${theme}`);
+    this.wrapper.dataset.theme = theme;
+    this.currentTheme = theme;
+  }
+
+  private setupAutoTheme(): void {
+    if (typeof window === "undefined") {
+      this.applyTheme("light");
+      return;
+    }
+
+    this.teardownAutoTheme();
+    const query = window.matchMedia("(prefers-color-scheme: dark)");
+    this.themeQuery = query;
+    const listener = (event: MediaQueryListEvent) => {
+      this.applyTheme(event.matches ? "dark" : "light");
+      if (this.isReady) {
+        this.emitChange();
+      }
+    };
+    this.themeQueryListener = listener;
+    query.addEventListener("change", listener);
+    this.applyTheme(query.matches ? "dark" : "light");
+  }
+
+  private teardownAutoTheme(): void {
+    if (this.themeQuery && this.themeQueryListener) {
+      this.themeQuery.removeEventListener("change", this.themeQueryListener);
+    }
+    this.themeQuery = undefined;
+    this.themeQueryListener = undefined;
   }
 
   private applyInitialValue(country: Country, value: PhoneInputInitialValue): void {
@@ -389,6 +455,22 @@ class VanillaPhoneInput implements PhoneInputController {
     this.setCountry(targetCountry.iso2);
   }
 
+  public setTheme(theme: PhoneInputTheme): void {
+    const previousTheme = this.currentTheme;
+    this.options.theme = theme;
+    this.themeMode = theme;
+    if (theme === "auto") {
+      this.setupAutoTheme();
+    } else {
+      this.teardownAutoTheme();
+      this.applyTheme(theme);
+    }
+
+    if (this.isReady && previousTheme !== this.currentTheme) {
+      this.emitChange();
+    }
+  }
+
   public setCountry(iso2: string): void {
     const nextCountry = resolveCountry(
       iso2,
@@ -431,7 +513,8 @@ class VanillaPhoneInput implements PhoneInputController {
       nationalNumber,
       dialCode,
       e164,
-      isValid: this.isValid(nationalNumber)
+      isValid: this.isValid(nationalNumber),
+      theme: this.currentTheme
     };
   }
 
@@ -444,6 +527,7 @@ class VanillaPhoneInput implements PhoneInputController {
   }
 
   public destroy(): void {
+    this.teardownAutoTheme();
     this.unsubs.forEach((unsubscribe) => unsubscribe());
     this.unsubs = [];
     this.dropdown.remove();

@@ -8,13 +8,20 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
+      "default": "./dist/index.js"
     },
-    "./styles.css": "./dist/styles.css",
-    "./assets/flags.png": "./dist/assets/flags.png",
-    "./assets/flags@2x.png": "./dist/assets/flags@2x.png"
+    "./styles.css": {
+      "default": "./dist/styles.css"
+    },
+    "./assets/flags.png": {
+      "default": "./dist/assets/flags.png"
+    },
+    "./assets/flags@2x.png": {
+      "default": "./dist/assets/flags@2x.png"
+    }
   },
   "files": [
     "dist",

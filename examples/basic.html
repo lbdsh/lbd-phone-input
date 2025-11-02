@@ -145,6 +145,14 @@
             <option value="none">Hide flag</option>
           </select>
         </label>
+        <label>
+          Theme
+          <select id="theme-mode">
+            <option value="auto">Auto (system)</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </label>
       </section>
 
       <label class="field">
@@ -185,6 +193,7 @@
 
       const phoneInput = document.querySelector("#demo-phone");
       const flagModeSelect = document.querySelector("#flag-mode");
+      const themeModeSelect = document.querySelector("#theme-mode");
       const bindingDial = document.querySelector("#binding-dial");
       const bindingNumber = document.querySelector("#binding-number");
       const bindingCombined = document.querySelector("#binding-combined");
@@ -217,6 +226,7 @@
             formattedValue: state.formattedValue,
             rawValue: state.rawValue,
             e164: state.e164,
+            theme: state.theme,
             isValid: state.isValid
           },
           null,
@@ -240,6 +250,12 @@
           nationalNumber: currentState.nationalNumber,
           combined: currentState.e164 || currentState.formattedValue
         });
+        controller.setTheme(themeModeSelect.value);
+        updateLog(controller.getState());
+      });
+
+      themeModeSelect.addEventListener("change", (event) => {
+        controller.setTheme(event.target.value);
         updateLog(controller.getState());
       });
 
@@ -254,6 +270,7 @@
         return createPhoneInput(phoneInput, {
           ...sharedOptions,
           flagDisplay,
+          theme: themeModeSelect.value,
           value,
           onChange: updateLog
         });
