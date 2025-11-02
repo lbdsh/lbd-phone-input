@@ -6,41 +6,47 @@
   </a>
 </p>
 
-> Ultra-flexible, framework-agnostic phone inputs with accessible country selectors, smart formatting and backend-friendly payloads.
+> Ultra-flexible, framework-agnostic phone inputs with accessible country selectors, smart formatting, geo-aware defaults, translations, and backend-friendly payloads.
 
 lbd-phone-input is maintained and proudly sponsored by [Transfeero](https://www.transfeero.com), the premium airport transfer platform.
 
+---
+
 ## Table of contents
 
-- [Highlights](#highlights)
+- [Overview](#overview)
 - [Installation](#installation)
-- [Quick start](#quick-start)
-- [Flag display modes](#flag-display-modes)
-- [Data binding & payloads](#data-binding--payloads)
-- [Light & dark mode](#light--dark-mode)
-- [Placeholders & realistic examples](#placeholders--realistic-examples)
-- [Dropdown behaviour](#dropdown-behaviour)
-- [Programmatic API](#programmatic-api)
-- [Advanced scenarios](#advanced-scenarios)
-  - [Prefilling from your backend](#prefilling-from-your-backend)
-  - [Multiple inputs in one shot](#multiple-inputs-in-one-shot)
-  - [Listening to the custom event](#listening-to-the-custom-event)
-- [Styling & theming](#styling--theming)
-- [Framework compatibility](#framework-compatibility)
-- [Examples](#examples)
-- [Contributing & license](#contributing--license)
+- [60-second quick start](#60-second-quick-start)
+- [Why choose lbd-phone-input?](#why-choose-lbd-phone-input)
+- [Feature tour](#feature-tour)
+  - [Flag rendering](#flag-rendering)
+  - [Adaptive themes](#adaptive-themes)
+  - [Realistic placeholders & masking](#realistic-placeholders--masking)
+  - [Language support](#language-support)
+  - [Geo-aware defaults](#geo-aware-defaults)
+  - [Split inputs](#split-inputs)
+- [Usage patterns & recipes](#usage-patterns--recipes)
+- [Configuration reference](#configuration-reference)
+- [Events & payloads](#events--payloads)
+- [Translations](#translations)
+- [Styling & design tokens](#styling--design-tokens)
+- [Framework integration](#framework-integration)
+- [Accessibility & keyboard support](#accessibility--keyboard-support)
+- [Release workflow](#release-workflow)
+- [FAQ](#faq)
+- [Sponsor & license](#sponsor--license)
 
-## Highlights
+---
 
-- 🌍 **Flexible flag rendering** – pick between emoji flags, a high-quality PNG sprite, or hide flags entirely via `flagDisplay`.
-- 🌗 **Adaptive theming** – switch between light, dark, or automatically follow the OS preference with one option.
-- 📞 **Realistic placeholders** – country-specific sample numbers help users understand the expected format instantly.
-- 🧭 **Geo-aware defaults** – call `detectBrowserCountry()` to preselect the user’s dial code in a snap.
-- 🔁 **Automatic sprite distribution** – ships with retina-ready assets and a compact PNG sprite.
-- ⚡ **Instant search & keyboard accessibility** – country lookup by name, ISO code or dial code with full keyboard support.
-- 🧠 **Smart formatting** – auto-format numbers per country mask, fall back to national mode, or take control manually.
-- 🔌 **Backend-ready payloads** – keep dial code and national number in sync with hidden inputs or pull a combined E.164 string on demand.
-- 🛠️ **Tiny API surface** – no frameworks required, just vanilla TypeScript/JS that plays nicely with any UI stack.
+## Overview
+
+<p align="center">
+  <img src="https://transfeeropublic.s3.eu-west-1.amazonaws.com/lbd.png" alt="lbd-phone-input dropdown example" width="720" />
+</p>
+
+lbd-phone-input ships as a zero-dependency TypeScript module. It embraces progressive enhancement: a single call transforms any `<input type="tel">` into a fully accessible phone widget.
+
+---
 
 ## Installation
 
@@ -52,11 +58,11 @@ yarn add lbd-phone-input
 pnpm add lbd-phone-input
 ```
 
-The package targets modern browsers (ES2020) and requires Node 18+ for local tooling.
+Requires Node 18+ for local tooling and modern browsers (ES2020).
 
-## Quick start
+---
 
-Include the distributed stylesheet, mount the input and listen for the `phone-change` event:
+## 60-second quick start
 
 ```html
 <!DOCTYPE html>
@@ -82,8 +88,8 @@ Include the distributed stylesheet, mount the input and listen for the `phone-ch
       const controller = createPhoneInput("#phone", {
         preferredCountries: ["it", "gb", "us"],
         defaultCountry: "it",
-        flagDisplay: "sprite", // emoji | sprite | none
-        theme: "auto", // auto | light | dark
+        flagDisplay: "sprite",
+        theme: "auto",
         nationalMode: true,
         bindings: {
           dialCode: "#dial",
@@ -102,9 +108,25 @@ Include the distributed stylesheet, mount the input and listen for the `phone-ch
 </html>
 ```
 
-## Flag display modes
+---
 
-Control how flags are rendered with the `flagDisplay` option:
+## Why choose lbd-phone-input?
+
+- **Modern UX:** Emoji or sprite flags, smart masking, and polished dark/light themes out-of-the-box.
+- **Accessible by design:** ARIA labels, keyboard navigation, and screen-reader hints are all baked in.
+- **Global ready:** Realistic placeholders plus translations for the ten most-spoken languages.
+- **Geo-smart:** Automatically selects the user’s country using browser language hints.
+- **Backend friendly:** Exposes dial code, national number, formatted value, and E.164 string simultaneously.
+- **Framework agnostic:** Vanilla TypeScript API works with React, Vue, Svelte, Angular, Bootstrap, Tailwind, or plain HTML.
+- **Split-input helper:** Easily separate dial-code and phone fields without losing validation logic.
+
+---
+
+## Feature tour
+
+### Flag rendering
+
+Choose between emoji flags, a retina PNG sprite, or hide flags completely.
 
 ```ts
 createPhoneInput("#emoji", { flagDisplay: "emoji" });
@@ -112,218 +134,314 @@ createPhoneInput("#sprite", { flagDisplay: "sprite" });
 createPhoneInput("#minimal", { flagDisplay: "none" });
 ```
 
-When using the sprite mode you can supply custom asset URLs (e.g. when bundling with Vite/Webpack):
+Pass custom sprite URLs through `flagSpriteUrl` and `flagSpriteRetinaUrl` when bundling assets locally.
+
+### Adaptive themes
+
+- `theme: "auto"` picks up the user’s system preference (light/dark).
+- `setTheme("light" | "dark" | "auto")` switches themes at runtime.
+- CSS variables (`--lbd-bg`, `--lbd-input-bg`, `--lbd-text-color`, etc.) make it trivial to match any design system.
+
+### Realistic placeholders & masking
+
+Every country ships with a plausible example (`347 12 12 456` for Italy). Placeholders automatically update when the selection changes, and the input is masked in national mode.
+
+### Language support
+
+Built-in translations for English, Italian, Spanish, French, German, Portuguese, Russian, Chinese (Simplified), Japanese, and Arabic. Override or extend strings with `translations`.
+
+### Geo-aware defaults
+
+Call `detectBrowserCountry()` to pre-select the correct dial code based on browser settings. No external service required.
+
+### Split inputs
+
+Use `createSplitPhoneInput` to keep dial code and national number in two separate fields while sharing formatting, validation, and events.
 
 ```ts
-import spriteUrl from "lbd-phone-input/assets/flags.png";
-import sprite2xUrl from "lbd-phone-input/assets/flags@2x.png";
-
-createPhoneInput("#sprite", {
-  flagDisplay: "sprite",
-  flagSpriteUrl: spriteUrl,
-  flagSpriteRetinaUrl: sprite2xUrl
+createSplitPhoneInput({
+  dialCode: "#billing-dial",
+  nationalNumber: "#billing-phone",
+  combined: "#billing-phone-e164"
+}, {
+  preferredCountries: ["us", "ca"],
+  flagDisplay: "sprite"
 });
 ```
 
-CSS variables are also exposed if you prefer theming via stylesheets:
+---
 
-```css
-.lbd-phone-input {
-  --lbd-flag-sprite-url: url("/assets/flags.png");
-  --lbd-flag-sprite-2x-url: url("/assets/flags@2x.png");
-  --lbd-flag-sprite-size: 5652px 15px;
-}
-```
+## Usage patterns & recipes
 
-## Data binding & payloads
+### Plain HTML
 
-You choose how to send numbers to the server:
+```html
+<input id="support-phone" type="tel" class="form-control" />
+<script type="module">
+  import { createPhoneInput } from "lbd-phone-input";
 
-```ts
-const input = createPhoneInput("#checkout-phone", {
-  bindings: {
-    dialCode: "#checkout-dial",
-    nationalNumber: "#checkout-phone-national",
-    combined: "#checkout-phone-e164"
-  }
-});
-
-// On demand
-const combined = input.getPayload(); // "+390123456789"
-const split = input.getPayload("split");
-// { dialCode: "+39", nationalNumber: "0123456789", formattedValue: "...", e164: "+390123456789" }
-```
-
-`phone-change` fires with the same payload, so any reactive framework can listen and sync state:
-
-```ts
-phoneElement.addEventListener("phone-change", ({ detail }) => {
-  saveDraft({ phone: detail.e164, isValid: detail.isValid, theme: detail.theme });
-});
-```
-
-## Light & dark mode
-
-Choose how the component should look with the `theme` option:
-
-```ts
-createPhoneInput("#support", { theme: "light" });
-createPhoneInput("#settings", { theme: "dark" });
-createPhoneInput("#signup", { theme: "auto" }); // follows system preference
-```
-
-You can also switch themes at runtime—perfect for custom toggles or dashboard preferences:
-
-```ts
-const controller = createPhoneInput("#phone", { theme: "auto" });
-
-themeToggle.addEventListener("click", () => {
-  controller.setTheme(themeToggle.checked ? "dark" : "light");
-});
-```
-
-## Placeholders & realistic examples
-
-Every country ships with a curated sample number so users instantly see a plausible pattern (`347 12 12 456` for Italy, `020 7946 0958` for the UK, etc.). When `nationalMode` is disabled the placeholder automatically prepends the international dial code.
-
-Need to override the placeholder for a specific locale? Provide your own country definition:
-
-```ts
-createPhoneInput("#support-it", {
-  countries: [
-    { iso2: "it", name: "Italy", dialCode: "+39", mask: "### ## ## ###", example: "347 99 88 111" }
-  ]
-});
-```
-
-## Geo detection helper
-
-Use the built-in `detectBrowserCountry()` helper to preselect the locale based on the user's browser settings. You can fall back to a default if the browser blocks access to the API.
-
-```ts
-detectBrowserCountry().then((iso2) => {
-  if (iso2) {
-    controller.setCountry(iso2);
-  }
-});
-```
-
-## Dropdown behaviour
-
-By default the country picker closes immediately after selecting an option. Set `closeDropdownOnSelection` to `false` if you want to keep the list open (handy for QA or when the dial code is just a reference).
-
-```ts
-createPhoneInput("#always-open", {
-  closeDropdownOnSelection: false,
-  flagDisplay: "none"
-});
-```
-
-## Programmatic API
-
-```ts
-const controller = createPhoneInput("#phone");
-
-controller.getCountry();      // Currently selected Country
-controller.getDialCode();      // e.g. "+33"
-controller.getNationalNumber();// sanitized national portion
-controller.setCountry("us");   // switch selection
-controller.setValue({ combined: "+4479460958" }); // prefill from backend
-controller.setTheme("dark");     // force dark mode
-controller.getPayload("both"); // split payload + combined string
-detectBrowserCountry().then((iso2) => iso2 && controller.setCountry(iso2));
-controller.destroy();          // restore the original <input>
-```
-
-## Advanced scenarios
-
-### Prefilling from your backend
-
-```ts
-fetch("/api/profile/phone")
-  .then((response) => response.json())
-  .then(({ dialCode, nationalNumber }) => {
-    controller.setValue({ dialCode, nationalNumber });
+  createPhoneInput("#support-phone", {
+    theme: "dark",
+    preferredCountries: ["us", "ca", "mx"],
+    autoFormat: true
   });
+</script>
 ```
 
-If you only have an international format, pass it via `combined` – the country will be detected and pre-selected automatically.
+### Auto-detect & national mode
 
-### Multiple inputs in one shot
+```ts
+const controller = createPhoneInput("#shipping-phone", {
+  nationalMode: true,
+  smartPlaceholder: true
+});
+
+detectBrowserCountry().then((iso2) => iso2 && controller.setCountry(iso2));
+```
+
+### Split inputs with validation
+
+```ts
+const split = createSplitPhoneInput({
+  dialCode: "#checkout-dial",
+  nationalNumber: "#checkout-phone",
+  combined: "#checkout-e164"
+}, {
+  nationalMode: true,
+  closeDropdownOnSelection: false
+});
+
+document.querySelector("#checkout-phone").addEventListener("phone-change", ({ detail }) => {
+  document.querySelector("#error").hidden = detail.isValid;
+});
+```
+
+### Bulk initialization
 
 ```ts
 import { createPhoneInputs } from "lbd-phone-input";
 
-const controllers = createPhoneInputs("input[data-phone]", {
-  preferredCountries: ["de", "fr"],
-  flagDisplay: "emoji"
+createPhoneInputs('input[data-phone="true"]', {
+  flagDisplay: "none",
+  autoFormat: false,
+  preferredCountries: ["de", "fr", "it"]
 });
 ```
 
-### Listening to the custom event
+### Inline formatting helper
 
-Every change emits `CustomEvent<PhoneInputState>` on the original input:
+```ts
+const { format } = createPhoneInput("#callback-phone");
+console.log(format("02079460958")); // "+44 20 7946 0958"
+```
+
+---
+
+## Configuration reference
+
+| Option | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `countries` | `Array<CountryDefinition \| Country>` | built-in dataset | Supply custom data; flags generated automatically when omitted. |
+| `preferredCountries` | `string[]` | `["it","us","gb","fr","de"]` | ISO alpha-2 codes pinned to the top of the list. |
+| `defaultCountry` | `string` | `"it"` | Initial ISO selection. |
+| `autoFormat` | `boolean` | `true` | Apply national masks while typing. |
+| `nationalMode` | `boolean` | `false` | Keep value in national format instead of international E.164. |
+| `smartPlaceholder` | `boolean` | `true` | Realistic example for the current country. |
+| `searchPlaceholder` | `string` | language dependent | Overrides the translated search placeholder. |
+| `dropdownPlaceholder` | `string` | language dependent | Text shown above the country list. |
+| `ariaLabelSelector` | `string` | language dependent | Accessible label for the flag button. |
+| `language` | `string` | auto (from `navigator.language`) | Force a specific translation locale. |
+| `translations` | `Partial<PhoneInputTranslations>` | `{}` | Override individual strings. |
+| `flagDisplay` | `"emoji" \| "sprite" \| "none"` | `"emoji"` | Flag display mode. |
+| `flagSpriteUrl` | `string` | built-in | Provide your own sprite. |
+| `flagSpriteRetinaUrl` | `string` | built-in | High-DPI sprite. |
+| `theme` | `"auto" \| "light" \| "dark"` | `"auto"` | Theme mode. |
+| `closeDropdownOnSelection` | `boolean` | `true` | Keep dropdown open if `false`. |
+| `bindings` | `SubmissionBindings` | `undefined` | Sync values into external inputs. |
+| `value` | `PhoneInputInitialValue` | `undefined` | Prefill dial code / national / combined value. |
+| `onChange` | `(state) => void` | `undefined` | Subscribe to changes. |
+
+---
+
+## Events & payloads
+
+Each change emits `phone-change` from the original `<input>`.
 
 ```ts
 input.addEventListener("phone-change", ({ detail }) => {
-  console.debug(detail.country.iso2, detail.dialCode, detail.e164);
+  console.log(detail);
 });
 ```
 
-## Styling & theming
+Sample payload:
 
-The distributed stylesheet is built with design tokens you can override per component:
+```json
+{
+  "dialCode": "+39",
+  "nationalNumber": "3471212456",
+  "formattedValue": "+39 347 12 12 456",
+  "e164": "+393471212456",
+  "country": { "iso2": "it", "name": "Italy", "...": "..." },
+  "isValid": true,
+  "theme": "dark"
+}
+```
+
+---
+
+## Translations
+
+Supported languages: **English, Italian, Spanish, French, German, Portuguese, Russian, Chinese (zh), Japanese (ja), Arabic (ar).**
+
+```ts
+createPhoneInput("#support-it", { language: "it" });
+
+createPhoneInput("#custom", {
+  translations: {
+    searchPlaceholder: "Buscar teléfono",
+    dropdownPlaceholder: "Selecciona un destino",
+    ariaLabelSelector: "Selecciona el prefijo"
+  }
+});
+```
+
+Need another locale? Provide overrides for all the fields in `PhoneInputTranslations`.
+
+---
+
+## Styling & design tokens
+
+| Variable | Purpose |
+| --- | --- |
+| `--lbd-bg` | Widget background color |
+| `--lbd-text-color` | Primary text color |
+| `--lbd-muted-color` | Secondary text |
+| `--lbd-border-color` | Input border |
+| `--lbd-border-radius` | Rounded corners |
+| `--lbd-focus-ring` | Focus outline shadow |
+| `--lbd-input-bg` | Visible input background |
+| `--lbd-input-placeholder` | Placeholder color |
+| `--lbd-search-bg` / `--lbd-search-border` | Dropdown search field styling |
+| `--lbd-option-hover` | Option hover color |
+| `--lbd-flag-sprite-url` / `--lbd-flag-sprite-2x-url` | Sprite references |
 
 ```css
 .lbd-phone-input {
   --lbd-border-radius: 16px;
   --lbd-border-color: rgba(15, 23, 42, 0.12);
-  --lbd-option-hover: rgba(59, 130, 246, 0.12);
-  --lbd-focus-ring: 0 0 0 4px rgba(99, 102, 241, 0.32);
+  --lbd-bg: #f8fafc;
+  --lbd-text-color: #0f172a;
 }
 ```
 
-## Framework compatibility
+Combine them with Tailwind or Bootstrap utility classes to match existing form themes.
 
-The component is plain DOM with namespaced styles, so you can wrap it with Bootstrap form classes or Tailwind utilities without fighting specificity. Override the CSS variables for deeper alignment, or drop it inside design systems such as Chakra, Mantine, DaisyUI, etc.
+---
 
-## Feature coverage vs. popular libraries
+## Framework integration
 
-| Capability | lbd-phone-input | intl-tel-input | react-phone-input-2 |
-| --- | --- | --- | --- |
-| Emoji & sprite flags | ✅ | ✅ | ✅ |
-| Light / dark / auto theming | ✅ | ❌ | ❌ |
-| Geo-aware default (`detectBrowserCountry`) | ✅ | ⚠️ (requires external code) | ⚠️ (requires external code) |
-| Built-in realistic placeholders | ✅ | ✅ | ⚠️ (basic) |
-| Framework agnostic (vanilla TS) | ✅ | ⚠️ (jQuery-based) | ❌ (React only) |
-| Event payload with dial/national/E.164/theme | ✅ | ❌ | ❌ |
-| Dropdown auto-close toggle | ✅ | ✅ | ⚠️ |
-| CSS variables for customization | ✅ | ❌ | ⚠️ |
+### React
 
-`✅` built-in, `⚠️` partial or requires manual wiring, `❌` not available out of the box. In practice, you get all the must-haves without pulling extra dependencies, plus modern niceties like theming, geo detection, and structured events.
+```tsx
+import { useEffect, useRef } from "react";
+import { createPhoneInput, detectBrowserCountry, PhoneInputController } from "lbd-phone-input";
+import "lbd-phone-input/dist/styles.css";
 
-## Examples
+export function PhoneField() {
+  const ref = useRef<HTMLInputElement>(null);
 
-Clone the repository, install dependencies and build once to emit `dist/`:
+  useEffect(() => {
+    if (!ref.current) return;
+    const controller: PhoneInputController = createPhoneInput(ref.current, { theme: "auto" });
+    detectBrowserCountry().then((iso2) => iso2 && controller.setCountry(iso2));
+    return () => controller.destroy();
+  }, []);
 
-```bash
-npm install
-npm run build
+  return <input ref={ref} type="tel" className="form-control" />;
+}
 ```
 
-Then open [`examples/basic.html`](examples/basic.html) in your browser. The playground demonstrates:
+### Vue 3 (Composition API)
 
-- Switching between emoji, sprite and flagless modes.
-- Theme toggling between light, dark and auto.
-- Two-way binding with discrete hidden inputs.
-- Headline compatibility with Bootstrap, Tailwind and bulk initialization.
+```ts
+import { onMounted, onBeforeUnmount, ref } from "vue";
+import { createPhoneInput, type PhoneInputController } from "lbd-phone-input";
+import "lbd-phone-input/dist/styles.css";
 
-Looking for more? Browse [`examples/gallery.html`](examples/gallery.html) to explore every configuration side-by-side (sprite/emoji flags, dark layouts, bulk initialization, manual theme toggles).
+export default {
+  setup() {
+    const el = ref<HTMLInputElement | null>(null);
+    let controller: PhoneInputController | null = null;
 
-## Contributing & license
+    onMounted(() => {
+      if (el.value) {
+        controller = createPhoneInput(el.value, { theme: "dark" });
+      }
+    });
 
-Issues and pull requests are welcome! Run `npm run dev` for watch mode while developing.
+    onBeforeUnmount(() => controller?.destroy());
+
+    return { el };
+  }
+};
+```
+
+### With Tailwind/Bootstrap
+
+```html
+<div class="form-floating">
+  <input id="bootstrap-phone" type="tel" class="form-control" />
+  <label for="bootstrap-phone">Emergency contact</label>
+</div>
+
+<script type="module">
+  import { createPhoneInput } from "lbd-phone-input";
+  createPhoneInput("#bootstrap-phone", { theme: "light", flagDisplay: "sprite" });
+</script>
+```
+
+---
+
+## Accessibility & keyboard support
+
+- `Tab` focuses the dial selector, `Enter` opens the list.
+- Arrow keys navigate countries; `Enter` selects; `Esc` closes the dropdown.
+- Screen readers announce the currently selected country and dial code.
+- The dropdown search field supports typing without losing focus.
+
+---
+
+## Release workflow
+
+This repository includes a GitHub Actions workflow (`.github/workflows/release.yml`) that:
+
+1. Builds the library on pushes to `master` or manual dispatch.
+2. Computes the next patch version based on the latest npm release.
+3. Bumps `package.json` / `package-lock.json`, publishes to npm, and tags the commit.
+
+Ensure `NPM_TOKEN` is defined in repository secrets to enable publishing.
+
+---
+
+## FAQ
+
+**Can I use my own country dataset?**  
+Yes. Pass an array of `CountryDefinition` objects; flags will be generated automatically when `flag` isn’t provided.
+
+**How do I validate the number before submission?**  
+Use the `phone-change` event payload. `detail.isValid` checks for basic length; combine with external libraries if you require advanced telecom validation.
+
+**Does it work server-side?**  
+Initialization requires `window`. If rendering on the server, hydrate the component in a `useEffect`/`onMounted` hook.
+
+**What about RTL languages?**  
+Set `language: "ar"` (or override via `translations`). The dropdown inherits document direction; customize with CSS if needed.
+
+---
+
+## Sponsor & license
+
+Created with ❤️ by [Transfeero](https://www.transfeero.com) and friends.  
+Offered by **LBD Srl** · [www.lbdsh.com](https://www.lbdsh.com)
 
 This project is released under the [MIT License](LICENSE).
-
-Offered by **LBD Srl** · [www.lbdsh.com](https://www.lbdsh.com)

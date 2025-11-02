@@ -9,8 +9,7 @@
     <style>
       :root {
         color-scheme: light;
-      }
-
+            }
       body {
         font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
         background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
@@ -19,7 +18,6 @@
         padding: 5vw;
         color: #0f172a;
       }
-
       main {
         max-width: 720px;
         margin: 0 auto;
@@ -30,24 +28,20 @@
         padding: 48px;
         box-shadow: 0 45px 90px -48px rgba(15, 23, 42, 0.48);
       }
-
       h1 {
         margin-top: 0;
         font-size: 2.5rem;
         line-height: 1.1;
       }
-
       p {
         margin-bottom: 1.75rem;
       }
-
       .controls {
         display: grid;
         gap: 1rem;
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         margin-bottom: 1.5rem;
       }
-
       label.field,
       .controls label {
         display: flex;
@@ -56,36 +50,30 @@
         font-weight: 600;
         letter-spacing: 0.01em;
       }
-
       select,
       .controls input[type="checkbox"] {
         font: inherit;
       }
-
       select {
         border-radius: 12px;
         border: 1px solid rgba(15, 23, 42, 0.12);
         padding: 0.65rem 0.75rem;
         background: rgba(255, 255, 255, 0.9);
       }
-
       .bindings {
         margin-top: 2.5rem;
         display: grid;
         gap: 1.4rem;
       }
-
       .binding-grid {
         display: grid;
         gap: 0.85rem;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       }
-
       .binding-grid label {
         gap: 0.5rem;
         letter-spacing: 0.01em;
       }
-
       .binding-grid input {
         padding: 0.6rem 0.75rem;
         border-radius: 10px;
@@ -93,11 +81,9 @@
         background: rgba(255, 255, 255, 0.92);
         font-weight: 500;
       }
-
       .binding-grid input[readonly] {
         color: #0f172a;
       }
-
       pre {
         background: #0f172a;
         color: #f1f5f9;
@@ -107,20 +93,17 @@
         margin: 2rem 0 0;
         font-size: 0.9rem;
       }
-
       footer {
         margin-top: 2.5rem;
         font-size: 0.9rem;
         color: rgba(15, 23, 42, 0.7);
       }
-
       footer a {
         color: inherit;
         font-weight: 600;
         text-decoration: none;
         border-bottom: 1px solid currentColor;
       }
-
       @media (max-width: 640px) {
         main {
           padding: 32px;
@@ -135,7 +118,6 @@
         Experiment with flag display modes, backend bindings and smart formatting. Change the
         configuration and watch the synchronized values update in real time.
       </p>
-
       <section class="controls">
         <label>
           Flag display mode
@@ -154,12 +136,10 @@
           </select>
         </label>
       </section>
-
       <label class="field">
         Phone number
         <input id="demo-phone" type="tel" autocomplete="tel" />
       </label>
-
       <section class="bindings">
         <h2>Synced payload</h2>
         <div class="binding-grid">
@@ -177,9 +157,7 @@
           </label>
         </div>
       </section>
-
       <pre id="log">{}</pre>
-
       <footer>
         Sponsored by
         <a href="https://www.transfeero.com" target="_blank" rel="noreferrer noopener"
@@ -187,10 +165,8 @@
         >
       </footer>
     </main>
-
     <script type="module">
       import { createPhoneInput } from "../dist/index.js";
-
       const phoneInput = document.querySelector("#demo-phone");
       const flagModeSelect = document.querySelector("#flag-mode");
       const themeModeSelect = document.querySelector("#theme-mode");
@@ -198,12 +174,10 @@
       const bindingNumber = document.querySelector("#binding-number");
       const bindingCombined = document.querySelector("#binding-combined");
       const log = document.querySelector("#log");
-
       const initialValue = {
         dialCode: "+39",
         nationalNumber: "3471234567"
       };
-
       const sharedOptions = {
         preferredCountries: ["it", "es", "fr", "us"],
         smartPlaceholder: true,
@@ -215,7 +189,6 @@
           combined: bindingCombined
         }
       };
-
       function updateLog(state) {
         log.textContent = JSON.stringify(
           {
@@ -233,20 +206,18 @@
           2
         );
       }
-
-      let controller = mount(flagModeSelect.value, initialValue);
-      updateLog(controller.getState());
-
-      detectBrowserCountry().then((iso2) => {
-        if (iso2) {
-          controller.setCountry(iso2);
-          updateLog(controller.getState());
-        }
-      });
+let controller = mount(flagModeSelect.value, initialValue);
+updateLog(controller.getState());
+detectBrowserCountry().then((iso2) => {
+  if (iso2) {
+    controller.setCountry(iso2);
+    updateLog(controller.getState());
+  }
+});
+document.body.dataset.theme = themeModeSelect.value;
       phoneInput.addEventListener("phone-change", (event) => {
         console.info("phone-change", event.detail);
       });
-
       flagModeSelect.addEventListener("change", (event) => {
         const nextMode = event.target.value;
         const currentState = controller.getState();
@@ -259,28 +230,29 @@
         controller.setTheme(themeModeSelect.value);
         updateLog(controller.getState());
       });
-
       themeModeSelect.addEventListener("change", (event) => {
-        controller.setTheme(event.target.value);
-        updateLog(controller.getState());
-      });
-
+  const nextTheme = event.target.value;
+  controller.setTheme(nextTheme);
+  document.body.dataset.theme = nextTheme;
+  updateLog(controller.getState());
+});
       // Simulate a backend update after a few seconds.
       setTimeout(() => {
         controller.setValue({ combined: "+442079460958" });
         controller.setCountry("gb");
         updateLog(controller.getState());
       }, 4500);
-
       function mount(flagDisplay, value) {
-        return createPhoneInput(phoneInput, {
-          ...sharedOptions,
-          flagDisplay,
-          theme: themeModeSelect.value,
-          value,
-          onChange: updateLog
-        });
-      }
+          const ctrl = createPhoneInput(phoneInput, {
+    ...sharedOptions,
+    flagDisplay,
+    theme: themeModeSelect.value,
+    value,
+    onChange: updateLog
+  });
+          ctrl.setTheme(themeModeSelect.value);
+          return ctrl;
+}
     </script>
   </body>
 </html>

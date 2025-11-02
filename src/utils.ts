@@ -13,6 +13,10 @@ export const formatWithMask = (mask: string | undefined, digits: string): string
     return digits;
   }
 
+  if (!digits.length) {
+    return "";
+  }
+
   let digitIndex = 0;
   const chars: string[] = [];
 
@@ -128,67 +132,6 @@ export const guessCountryFromInput = (
   return fallback;
 };
 
-export const formatPhoneNumber = (
-  value: string,
-  country: Country,
-  options: { nationalMode?: boolean; autoFormat?: boolean; disableDialCodeInsertion?: boolean }
-): string => {
-  const digits = extractDigits(value);
-  const mask = country.mask;
-  const dialDigits = extractDigits(country.dialCode);
-
-  if (!options.autoFormat) {
-    if (options.nationalMode) {
-      return digits;
-    }
-
-    const prefixed = digits.startsWith(dialDigits) ? digits : `${dialDigits}${digits}`;
-    return ensureLeadingPlus(prefixed);
-  }
-
-  if (options.nationalMode) {
-    return formatWithMask(mask, digits);
-  }
-
-  if (options.disableDialCodeInsertion) {
-    return ensureLeadingPlus(digits);
-  }
-
-  const nationalDigits = digits.startsWith(dialDigits)
-    ? digits.slice(dialDigits.length)
-    : digits;
-  const formattedNational = formatWithMask(mask, nationalDigits);
-
-  return formattedNational
-    ? `+${dialDigits} ${formattedNational}`
-    : `+${dialDigits}`;
-};
-
-export const toE164 = (dialCode: string, nationalNumber: string): string => {
-  const dialDigits = extractDigits(ensureLeadingPlus(dialCode));
-  const numberDigits = extractDigits(nationalNumber);
-  const combined = dialDigits + numberDigits;
-  return combined ? `+${combined}` : "";
-};
-
-export const splitNumber = (
-  value: string,
-  country: Country
-): { dialCode: string; nationalNumber: string } => {
-  const digits = extractDigits(value);
-  const dialDigits = extractDigits(country.dialCode);
-  if (!digits.startsWith(dialDigits)) {
-    return {
-      dialCode: country.dialCode,
-      nationalNumber: digits
-    };
-  }
-  return {
-    dialCode: country.dialCode,
-    nationalNumber: digits.slice(dialDigits.length)
-  };
-};
-
 export const buildSearchIndex = (countries: Country[]): CountrySearchIndex =>
   countries.map((country) => ({
     country,
@@ -234,4 +177,26 @@ export const findCountryByDialCode = (
   );
 
   return match ?? fallback;
+};
+
+export const splitNumber = (
+  value: string,
+  country: Country
+): { dialCode: string; nationalNumber: string } => {
+  const digits = extractDigits(value);
+  const dialDigits = extractDigits(country.dialCode);
+  if (!digits.startsWith(dialDigits)) {
+    return { dialCode: country.dialCode, nationalNumber: digits };
+  }
+  return {
+    dialCode: country.dialCode,
+    nationalNumber: digits.slice(dialDigits.length)
+  };
+};
+
+export const toE164 = (dialCode: string, nationalNumber: string): string => {
+  const dialDigits = extractDigits(ensureLeadingPlus(dialCode));
+  const numberDigits = extractDigits(nationalNumber);
+  const combined = dialDigits + numberDigits;
+  return combined ? `+${combined}` : "";
 };

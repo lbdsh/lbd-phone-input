@@ -10,15 +10,17 @@ import {
   PhoneInputState,
   SubmissionBindings,
   PhonePayload,
-  GeolocationCountryDetector
+  GeolocationCountryDetector,
+  SplitPhoneInputTargets,
+  PhoneInputTranslations
 } from "./types";
 import {
   buildSearchIndex,
   extractDigits,
+  formatWithMask,
   filterCountries,
   findCountryByDialCode,
   flagSort,
-  formatPhoneNumber,
   guessCountryFromInput,
   normalizeDialCode,
   resolveCountry,
@@ -26,6 +28,7 @@ import {
   splitNumber,
   toE164
 } from "./utils";
+import { resolveTranslations } from "./translations";
 
 const COMPONENT_CLASS = "lbd-phone-input";
 const DROPDOWN_VISIBLE_CLASS = `${COMPONENT_CLASS}__dropdown--visible`;
@@ -202,11 +205,16 @@ const createOptionElement = (
   return item;
 };
 
-const createPlaceholderOption = (label: string): HTMLLIElement => {
+const createPlaceholderOption = (label: string, variant: "hint" | "empty" = "hint"): HTMLLIElement => {
   const item = document.createElement("li");
   item.className = `${COMPONENT_CLASS}__placeholder`;
   item.textContent = label;
-  item.setAttribute("aria-hidden", "true");
+  if (variant === "empty") {
+    item.setAttribute("role", "status");
+    item.setAttribute("aria-live", "polite");
+  } else {
+    item.setAttribute("aria-hidden", "true");
+  }
   return item;
 };
 
@@ -230,6 +238,8 @@ class VanillaPhoneInput implements PhoneInputController {
   private bindings: BindingElements = {};
   private unsubs: Array<() => void> = [];
   private lastCommittedValue = "";
+  private i18n: PhoneInputTranslations;
+  private dropdownLabel = "";
 
   constructor(target: HTMLInputElement | string, options?: PhoneInputOptions) {
     if (typeof window === "undefined") {
@@ -238,6 +248,9 @@ class VanillaPhoneInput implements PhoneInputController {
 
     this.input = resolveInputElement(target);
     const countriesSource = options?.countries ?? DEFAULT_OPTIONS.countries;
+    const userSearchPlaceholder = options?.searchPlaceholder;
+    const userDropdownPlaceholder = options?.dropdownPlaceholder;
+    const userAriaLabel = options?.ariaLabelSelector;
     const normalizedCountries = normalizeCountries(countriesSource).sort((a, b) =>
       a.name.localeCompare(b.name)
     );
@@ -247,6 +260,22 @@ class VanillaPhoneInput implements PhoneInputController {
       ...options,
       countries: normalizedCountries
     };
+
+    const languageCandidate = options?.language ?? (typeof navigator !== "undefined" ? navigator.language : "en");
+    const normalizedLanguage = languageCandidate.toLowerCase().split(/[\-_]/)[0];
+    this.i18n = resolveTranslations(normalizedLanguage, options?.translations);
+
+    if (userSearchPlaceholder === undefined) {
+      this.options.searchPlaceholder = this.i18n.searchPlaceholder;
+    }
+    if (userDropdownPlaceholder === undefined) {
+      this.options.dropdownPlaceholder = this.i18n.dropdownPlaceholder;
+    }
+    if (userAriaLabel === undefined) {
+      this.options.ariaLabelSelector = this.i18n.ariaLabelSelector;
+    }
+
+    this.dropdownLabel = this.options.dropdownPlaceholder ?? this.i18n.dropdownPlaceholder;
 
     const allowedFlagModes: FlagDisplayMode[] = ["emoji", "sprite", "none"];
     const requestedFlagMode = (this.options.flagDisplay ?? "emoji") as FlagDisplayMode;
@@ -294,7 +323,10 @@ class VanillaPhoneInput implements PhoneInputController {
     this.selectorButton.className = `${COMPONENT_CLASS}__selector`;
     this.selectorButton.setAttribute("aria-haspopup", "listbox");
     this.selectorButton.setAttribute("aria-expanded", "false");
-    this.selectorButton.setAttribute("aria-label", this.options.ariaLabelSelector);
+    this.selectorButton.setAttribute(
+      "aria-label",
+      this.options.ariaLabelSelector ?? this.i18n.ariaLabelSelector
+    );
 
     this.dropdown = document.createElement("div");
     this.dropdown.className = `${COMPONENT_CLASS}__dropdown`;
@@ -304,7 +336,7 @@ class VanillaPhoneInput implements PhoneInputController {
     this.searchInput = document.createElement("input");
     this.searchInput.type = "search";
     this.searchInput.className = `${COMPONENT_CLASS}__search`;
-    this.searchInput.placeholder = this.options.searchPlaceholder;
+    this.searchInput.placeholder = this.options.searchPlaceholder ?? this.i18n.searchPlaceholder;
 
     this.optionList = document.createElement("ul");
     this.optionList.className = `${COMPONENT_CLASS}__options`;
@@ -394,22 +426,35 @@ class VanillaPhoneInput implements PhoneInputController {
   }
 
   private applyInitialValue(country: Country, value: PhoneInputInitialValue): void {
-    const normalizedDial = normalizeDialCode(value.dialCode) || country.dialCode;
-    let nationalNumber = value.nationalNumber ?? "";
+    const providedCombined = value.combined?.trim();
+    const providedNational = value.nationalNumber?.trim();
+    const providedDial = value.dialCode?.trim();
+    const existingInput = this.input.value.trim();
 
-    if (!nationalNumber && value.combined) {
-      nationalNumber = splitNumber(value.combined, country).nationalNumber;
+    if (!providedCombined && !providedNational && !providedDial && !existingInput) {
+      this.input.value = "";
+      return;
+    }
+
+    const normalizedDial = normalizeDialCode(value.dialCode) || country.dialCode;
+    let nationalNumber = providedNational ?? "";
+
+    if (!nationalNumber && providedCombined) {
+      nationalNumber = splitNumber(providedCombined, country).nationalNumber;
     }
 
     if (this.options.nationalMode) {
-      this.input.value = nationalNumber;
+      this.input.value = nationalNumber || existingInput || "";
+    } else if (providedCombined) {
+      this.input.value = providedCombined;
+    } else if (nationalNumber) {
+      this.input.value = `${normalizedDial} ${nationalNumber}`.trim();
+    } else if (existingInput) {
+      this.input.value = existingInput;
+    } else if (providedDial) {
+      this.input.value = normalizedDial;
     } else {
-      const combined =
-        value.combined ||
-        (nationalNumber
-          ? toE164(normalizedDial, nationalNumber)
-          : normalizedDial);
-      this.input.value = combined;
+      this.input.value = "";
     }
   }
 
@@ -500,40 +545,42 @@ class VanillaPhoneInput implements PhoneInputController {
   }
 
   public getState(): PhoneInputState {
-    const rawValue = this.input.value;
-    const formattedValue = formatPhoneNumber(rawValue, this.selectedCountry, {
-      autoFormat: this.options.autoFormat,
-      nationalMode: this.options.nationalMode,
-      disableDialCodeInsertion: this.options.disableDialCodeInsertion
-    });
-    const split = splitNumber(formattedValue, this.selectedCountry);
-    let nationalNumber = split.nationalNumber;
-
-    if (this.options.nationalMode) {
-      nationalNumber = extractDigits(rawValue);
-    }
-
+    const displayValue = this.input.value;
+    const nationalDigits = extractDigits(displayValue);
+    const formattedNational = this.options.autoFormat
+      ? formatWithMask(this.selectedCountry.mask ?? "", nationalDigits)
+      : nationalDigits;
     const dialCode = this.selectedCountry.dialCode;
-    const e164 = toE164(dialCode, nationalNumber);
+    const formattedValue = this.options.nationalMode
+      ? formattedNational
+      : nationalDigits
+        ? `${dialCode} ${formattedNational}`.trim()
+        : "";
+    const e164 = toE164(dialCode, nationalDigits);
 
     return {
       country: this.selectedCountry,
       formattedValue,
-      rawValue,
-      nationalNumber,
+      rawValue: displayValue,
+      nationalNumber: nationalDigits,
       dialCode,
       e164,
-      isValid: this.isValid(nationalNumber),
+      isValid: this.isValid(nationalDigits),
       theme: this.currentTheme
     };
   }
 
   public format(value: string): string {
-    return formatPhoneNumber(value, this.selectedCountry, {
-      autoFormat: this.options.autoFormat,
-      nationalMode: this.options.nationalMode,
-      disableDialCodeInsertion: this.options.disableDialCodeInsertion
-    });
+    const nationalDigits = extractDigits(value);
+    const formattedNational = this.options.autoFormat
+      ? formatWithMask(this.selectedCountry.mask ?? "", nationalDigits)
+      : nationalDigits;
+
+    if (this.options.nationalMode) {
+      return formattedNational;
+    }
+
+    return nationalDigits ? `${this.selectedCountry.dialCode} ${formattedNational}`.trim() : "";
   }
 
   public destroy(): void {
@@ -590,7 +637,6 @@ class VanillaPhoneInput implements PhoneInputController {
       const query = this.searchInput.value;
       const filtered = filterCountries(query, this.searchIndex);
       this.renderOptions(filtered);
-      this.focusFirstOption();
     };
 
     const handleOptionClick = (event: Event) => {
@@ -674,8 +720,9 @@ class VanillaPhoneInput implements PhoneInputController {
     };
 
     const handleInput = () => {
-      this.normalizeValue();
-      this.syncCountryFromValue();
+      const rawBeforeNormalization = this.input.value;
+      this.normalizeValue(rawBeforeNormalization);
+      this.syncCountryFromValue(rawBeforeNormalization);
       this.emitChange();
     };
 
@@ -709,8 +756,13 @@ class VanillaPhoneInput implements PhoneInputController {
     const currentIso = this.selectedCountry?.iso2;
     this.optionList.innerHTML = "";
 
-    if (this.options.dropdownPlaceholder) {
-      this.optionList.append(createPlaceholderOption(this.options.dropdownPlaceholder));
+    if (this.dropdownLabel) {
+      this.optionList.append(createPlaceholderOption(this.dropdownLabel));
+    }
+
+    if (countries.length === 0) {
+      this.optionList.append(createPlaceholderOption(this.i18n.noResults, "empty"));
+      return;
     }
 
     for (const country of countries) {
@@ -813,46 +865,40 @@ class VanillaPhoneInput implements PhoneInputController {
       return;
     }
     const example = (this.selectedCountry.example ?? "").trim();
+    this.input.placeholder = example;
+  }
 
-    if (!example) {
-      this.input.placeholder = "";
-      return;
-    }
-
+  private normalizeValue(rawInput?: string): void {
     if (this.options.nationalMode) {
-      this.input.placeholder = example;
       return;
     }
 
-    const withDialCode = example.startsWith("+")
-      ? example
-      : `${this.selectedCountry.dialCode} ${example}`;
+    const raw = rawInput ?? this.input.value;
+    const sanitized = sanitizeValue(raw);
 
-    this.input.placeholder = withDialCode.replace(/\s+/g, " ").trim();
-  }
-
-  private normalizeValue(): void {
-    if (!this.options.preventInvalidDialCode || this.options.nationalMode) {
+    if (!sanitized) {
+      this.input.value = "";
       return;
     }
 
-    const sanitized = sanitizeValue(this.input.value);
-    const dialCode = this.selectedCountry.dialCode;
-
-    if (!sanitized.startsWith(dialCode)) {
-      const dialDigits = extractDigits(dialCode);
-      const digitsOnly = extractDigits(sanitized);
-      const nationalDigits = digitsOnly.startsWith(dialDigits)
-        ? digitsOnly.slice(dialDigits.length)
-        : digitsOnly;
-      const newValue = nationalDigits ? `${dialCode} ${nationalDigits}` : dialCode;
-      this.input.value = newValue;
+    if (!this.options.preventInvalidDialCode) {
+      this.input.value = extractDigits(raw);
+      return;
     }
+
+    if (sanitized.startsWith("+")) {
+      const parsed = splitNumber(sanitized, this.selectedCountry);
+      this.input.value = parsed.nationalNumber;
+      return;
+    }
+
+    this.input.value = extractDigits(sanitized);
   }
 
-  private syncCountryFromValue(): void {
+  private syncCountryFromValue(rawInput?: string): void {
+    const source = rawInput ?? this.input.value;
     const newCountry = guessCountryFromInput(
-      this.input.value,
+      source,
       this.countries,
       this.selectedCountry
     );
@@ -870,18 +916,15 @@ class VanillaPhoneInput implements PhoneInputController {
       return;
     }
 
-    const formatted = formatPhoneNumber(this.input.value, this.selectedCountry, {
-      autoFormat: this.options.autoFormat,
-      nationalMode: this.options.nationalMode,
-      disableDialCodeInsertion: this.options.disableDialCodeInsertion
-    });
+    const digits = extractDigits(this.input.value);
+    const displayValue = formatWithMask(this.selectedCountry.mask ?? "", digits);
 
-    if (formatted === this.lastCommittedValue) {
+    if (displayValue === this.lastCommittedValue) {
       return;
     }
 
-    this.lastCommittedValue = formatted;
-    this.input.value = formatted;
+    this.lastCommittedValue = displayValue;
+    this.input.value = displayValue;
     this.emitChange();
   }
 
@@ -929,6 +972,62 @@ export const createPhoneInputs = (
   return Array.from(document.querySelectorAll<HTMLInputElement>(selector)).map((input) =>
     createPhoneInput(input, options)
   );
+};
+
+export const createSplitPhoneInput = (
+  targets: SplitPhoneInputTargets,
+  options?: PhoneInputOptions
+): PhoneInputController => {
+  const dialInput = resolveOptionalInput(targets.dialCode, "dialCode");
+  const numberInput = resolveInputElement(targets.nationalNumber);
+  const combinedInput = targets.combined
+    ? resolveOptionalInput(targets.combined, "combined")
+    : undefined;
+
+  const controller = createPhoneInput(numberInput, {
+    ...options,
+    bindings: {
+      dialCode: dialInput ?? options?.bindings?.dialCode,
+      nationalNumber: numberInput,
+      combined: combinedInput ?? options?.bindings?.combined
+    }
+  });
+
+  const lookupCountries = normalizeCountries(
+    (options?.countries ?? DEFAULT_COUNTRIES) as Array<Country | CountryDefinition>
+  );
+
+  const handleDialInput = () => {
+    if (!dialInput) {
+      return;
+    }
+    const normalized = normalizeDialCode(dialInput.value);
+    dialInput.value = normalized;
+    if (normalized) {
+      const match = lookupCountries.find((entry) => normalizeDialCode(entry.dialCode) === normalized);
+      if (match) {
+        controller.setCountry(match.iso2);
+      }
+    }
+  };
+
+  if (dialInput) {
+    dialInput.addEventListener("input", handleDialInput);
+  }
+
+  const originalDestroy = controller.destroy.bind(controller);
+  controller.destroy = () => {
+    if (dialInput) {
+      dialInput.removeEventListener("input", handleDialInput);
+    }
+    originalDestroy();
+  };
+
+  if (dialInput) {
+    handleDialInput();
+  }
+
+  return controller;
 };
 
 export const detectBrowserCountry: GeolocationCountryDetector = async () => {

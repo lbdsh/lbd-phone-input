@@ -11,6 +11,10 @@
   --lbd-flag-sprite-url: url("./assets/flags.png");
   --lbd-flag-sprite-2x-url: url("./assets/flags@2x.png");
   --lbd-flag-sprite-size: 5652px 15px;
+  --lbd-input-bg: transparent;
+  --lbd-input-placeholder: rgba(107, 114, 128, 0.7);
+  --lbd-search-bg: #f9fafb;
+  --lbd-search-border: rgba(17, 24, 39, 0.12);
 
   position: relative;
   display: inline-flex;
@@ -31,6 +35,10 @@
   --lbd-option-hover: rgba(96, 165, 250, 0.2);
   --lbd-dropdown-shadow: 0 30px 60px -32px rgba(15, 23, 42, 0.9);
   --lbd-focus-ring: 0 0 0 3px rgba(96, 165, 250, 0.55);
+  --lbd-input-bg: rgba(15, 23, 42, 0.6);
+  --lbd-input-placeholder: rgba(148, 163, 184, 0.65);
+  --lbd-search-bg: rgba(15, 23, 42, 0.65);
+  --lbd-search-border: rgba(148, 163, 184, 0.4);
 }
 
 .lbd-phone-input:focus-within {
@@ -85,15 +93,30 @@
 .lbd-phone-input__input {
   flex: 1;
   border: none;
-  background: transparent;
+  background-color: var(--lbd-input-bg);
+  color: var(--lbd-text-color);
+  caret-color: var(--lbd-text-color);
   padding: 0.75rem 1rem;
   font-size: 1rem;
   border-top-right-radius: inherit;
   border-bottom-right-radius: inherit;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.lbd-phone-input__input::placeholder {
+  color: var(--lbd-input-placeholder);
+  opacity: 1;
 }
 
 .lbd-phone-input__input:focus {
   outline: none;
+}
+
+.lbd-phone-input__input.form-control,
+.lbd-phone-input__input.input,
+.lbd-phone-input__input[class*="form-control"] {
+  background-color: var(--lbd-input-bg) !important;
+  color: var(--lbd-text-color) !important;
 }
 
 .lbd-phone-input__dropdown {
@@ -127,21 +150,18 @@
 }
 
 .lbd-phone-input__search {
-  border: 1px solid rgba(17, 24, 39, 0.12);
+  border: 1px solid var(--lbd-search-border);
   border-radius: 10px;
   padding: 0.6rem 0.85rem;
   font-size: 0.95rem;
   margin-bottom: 0.75rem;
+  background-color: var(--lbd-search-bg);
+  color: var(--lbd-text-color);
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
-.lbd-phone-input--dark .lbd-phone-input__search {
-  border-color: rgba(148, 163, 184, 0.4);
-  background-color: rgba(15, 23, 42, 0.65);
-  color: inherit;
-}
-
-.lbd-phone-input--dark .lbd-phone-input__search::placeholder {
-  color: rgba(148, 163, 184, 0.7);
+.lbd-phone-input__search::placeholder {
+  color: var(--lbd-input-placeholder);
 }
 
 .lbd-phone-input__search:focus {

@@ -47,6 +47,8 @@ export interface PhoneInputOptions {
   flagSpriteRetinaUrl?: string;
   theme?: PhoneInputTheme;
   closeDropdownOnSelection?: boolean;
+  language?: string;
+  translations?: Partial<Record<string, string>>;
 }
 
 export interface PhoneInputState {
@@ -67,6 +69,13 @@ export interface PhonePayload {
   e164: string;
 }
 
+export interface PhoneInputTranslations {
+  searchPlaceholder: string;
+  dropdownPlaceholder: string;
+  ariaLabelSelector: string;
+  noResults: string;
+}
+
 export interface PhoneInputController {
   getCountry(): Country;
   getState(): PhoneInputState;
@@ -81,3 +90,9 @@ export interface PhoneInputController {
 }
 
 export type GeolocationCountryDetector = () => Promise<string | null | undefined>;
+
+export interface SplitPhoneInputTargets {
+  dialCode: string | HTMLInputElement;
+  nationalNumber: string | HTMLInputElement;
+  combined?: string | HTMLInputElement;
+}
