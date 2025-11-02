@@ -11,8 +11,32 @@ if (existsSync(assetsSrc)) {
 
   const cdnDest = resolve(root, "dist/cdn");
   mkdirSync(cdnDest, { recursive: true });
-  cpSync(resolve(root, 'dist/index.js'), resolve(cdnDest, 'lbd-phone-input.esm.js'));
-  cpSync(resolve(root, 'dist/index.cjs'), resolve(cdnDest, 'lbd-phone-input.cjs'));
-  cpSync(resolve(root, 'dist/styles.css'), resolve(cdnDest, 'lbd-phone-input.css'));
+
+  const esmSource = resolve(root, 'dist/index.js');
+  const cjsSource = resolve(root, 'dist/index.cjs');
+  const cssSource = resolve(root, 'dist/styles.css');
+
+  cpSync(esmSource, resolve(cdnDest, 'lbd-phone-input.esm.js'));
+  cpSync(cjsSource, resolve(cdnDest, 'lbd-phone-input.cjs'));
+  cpSync(cssSource, resolve(cdnDest, 'lbd-phone-input.css'));
+
+  const esbuild = (await import('esbuild')).build;
+
+  await esbuild({
+    entryPoints: [esmSource],
+    outfile: resolve(cdnDest, 'lbd-phone-input.esm.min.js'),
+    minify: true,
+    bundle: false,
+    format: 'esm'
+  });
+
+  await esbuild({
+    entryPoints: [cjsSource],
+    outfile: resolve(cdnDest, 'lbd-phone-input.cjs.min.js'),
+    minify: true,
+    bundle: false,
+    format: 'cjs'
+  });
+
   cpSync(assetsSrc, resolve(cdnDest, 'assets'), { recursive: true });
 }
