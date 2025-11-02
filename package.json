@@ -53,8 +53,6 @@
     "node": ">=18"
   },
   "devDependencies": {
-    "happy-dom": "^9.20.3",
-    "esbuild": "^0.25.12",
     "tsup": "^8.0.1",
     "typescript": "^5.5.4",
     "vitest": "^1.5.3"
