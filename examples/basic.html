@@ -1,0 +1,263 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>lbd-phone-input · Playground</title>
+    <link rel="stylesheet" href="../dist/styles.css" />
+    <style>
+      :root {
+        color-scheme: light;
+      }
+
+      body {
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+        min-height: 100vh;
+        margin: 0;
+        padding: 5vw;
+        color: #0f172a;
+      }
+
+      main {
+        max-width: 720px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(18px);
+        border-radius: 26px;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        padding: 48px;
+        box-shadow: 0 45px 90px -48px rgba(15, 23, 42, 0.48);
+      }
+
+      h1 {
+        margin-top: 0;
+        font-size: 2.5rem;
+        line-height: 1.1;
+      }
+
+      p {
+        margin-bottom: 1.75rem;
+      }
+
+      .controls {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        margin-bottom: 1.5rem;
+      }
+
+      label.field,
+      .controls label {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+      }
+
+      select,
+      .controls input[type="checkbox"] {
+        font: inherit;
+      }
+
+      select {
+        border-radius: 12px;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        padding: 0.65rem 0.75rem;
+        background: rgba(255, 255, 255, 0.9);
+      }
+
+      .bindings {
+        margin-top: 2.5rem;
+        display: grid;
+        gap: 1.4rem;
+      }
+
+      .binding-grid {
+        display: grid;
+        gap: 0.85rem;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      }
+
+      .binding-grid label {
+        gap: 0.5rem;
+        letter-spacing: 0.01em;
+      }
+
+      .binding-grid input {
+        padding: 0.6rem 0.75rem;
+        border-radius: 10px;
+        border: 1px solid rgba(15, 23, 42, 0.14);
+        background: rgba(255, 255, 255, 0.92);
+        font-weight: 500;
+      }
+
+      .binding-grid input[readonly] {
+        color: #0f172a;
+      }
+
+      pre {
+        background: #0f172a;
+        color: #f1f5f9;
+        border-radius: 14px;
+        padding: 1rem 1.25rem;
+        overflow-x: auto;
+        margin: 2rem 0 0;
+        font-size: 0.9rem;
+      }
+
+      footer {
+        margin-top: 2.5rem;
+        font-size: 0.9rem;
+        color: rgba(15, 23, 42, 0.7);
+      }
+
+      footer a {
+        color: inherit;
+        font-weight: 600;
+        text-decoration: none;
+        border-bottom: 1px solid currentColor;
+      }
+
+      @media (max-width: 640px) {
+        main {
+          padding: 32px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>lbd-phone-input playground</h1>
+      <p>
+        Experiment with flag display modes, backend bindings and smart formatting. Change the
+        configuration and watch the synchronized values update in real time.
+      </p>
+
+      <section class="controls">
+        <label>
+          Flag display mode
+          <select id="flag-mode">
+            <option value="sprite">Sprite (PNG)</option>
+            <option value="emoji">Emoji</option>
+            <option value="none">Hide flag</option>
+          </select>
+        </label>
+      </section>
+
+      <label class="field">
+        Phone number
+        <input id="demo-phone" type="tel" autocomplete="tel" />
+      </label>
+
+      <section class="bindings">
+        <h2>Synced payload</h2>
+        <div class="binding-grid">
+          <label>
+            Dial code
+            <input id="binding-dial" readonly />
+          </label>
+          <label>
+            National number
+            <input id="binding-number" readonly />
+          </label>
+          <label>
+            E.164 / combined
+            <input id="binding-combined" readonly />
+          </label>
+        </div>
+      </section>
+
+      <pre id="log">{}</pre>
+
+      <footer>
+        Sponsored by
+        <a href="https://www.transfeero.com" target="_blank" rel="noreferrer noopener"
+          >Transfeero</a
+        >
+      </footer>
+    </main>
+
+    <script type="module">
+      import { createPhoneInput } from "../dist/index.js";
+
+      const phoneInput = document.querySelector("#demo-phone");
+      const flagModeSelect = document.querySelector("#flag-mode");
+      const bindingDial = document.querySelector("#binding-dial");
+      const bindingNumber = document.querySelector("#binding-number");
+      const bindingCombined = document.querySelector("#binding-combined");
+      const log = document.querySelector("#log");
+
+      const initialValue = {
+        dialCode: "+39",
+        nationalNumber: "3471234567"
+      };
+
+      const sharedOptions = {
+        preferredCountries: ["it", "es", "fr", "us"],
+        smartPlaceholder: true,
+        nationalMode: true,
+        preventInvalidDialCode: true,
+        bindings: {
+          dialCode: bindingDial,
+          nationalNumber: bindingNumber,
+          combined: bindingCombined
+        }
+      };
+
+      function updateLog(state) {
+        log.textContent = JSON.stringify(
+          {
+            country: state.country.name,
+            iso2: state.country.iso2,
+            dialCode: state.dialCode,
+            nationalNumber: state.nationalNumber,
+            formattedValue: state.formattedValue,
+            rawValue: state.rawValue,
+            e164: state.e164,
+            isValid: state.isValid
+          },
+          null,
+          2
+        );
+      }
+
+      let controller = mount(flagModeSelect.value, initialValue);
+      updateLog(controller.getState());
+
+      phoneInput.addEventListener("phone-change", (event) => {
+        console.info("phone-change", event.detail);
+      });
+
+      flagModeSelect.addEventListener("change", (event) => {
+        const nextMode = event.target.value;
+        const currentState = controller.getState();
+        controller.destroy();
+        controller = mount(nextMode, {
+          dialCode: currentState.dialCode,
+          nationalNumber: currentState.nationalNumber,
+          combined: currentState.e164 || currentState.formattedValue
+        });
+        updateLog(controller.getState());
+      });
+
+      // Simulate a backend update after a few seconds.
+      setTimeout(() => {
+        controller.setValue({ combined: "+442079460958" });
+        controller.setCountry("gb");
+        updateLog(controller.getState());
+      }, 4500);
+
+      function mount(flagDisplay, value) {
+        return createPhoneInput(phoneInput, {
+          ...sharedOptions,
+          flagDisplay,
+          value,
+          onChange: updateLog
+        });
+      }
+    </script>
+  </body>
+</html>

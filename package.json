@@ -1,0 +1,51 @@
+{
+  "name": "lbd-phone-input",
+  "version": "0.1.0",
+  "description": "Accessible, framework-agnostic phone input with country code selector and formatting utilities.",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./assets/flags.png": "./dist/assets/flags.png",
+    "./assets/flags@2x.png": "./dist/assets/flags@2x.png"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts src/styles.css --format esm,cjs --dts --out-dir dist --minify --clean",
+    "postbuild": "node ./scripts/postbuild.mjs",
+    "dev": "tsup src/index.ts src/styles.css --format esm --dts --out-dir dist --watch --minify --onSuccess \"node ./scripts/postbuild.mjs\""
+  },
+  "keywords": [
+    "phone",
+    "input",
+    "country-code",
+    "selector",
+    "library",
+    "vanilla-js"
+  ],
+  "author": "Antonino Testa",
+  "license": "MIT",
+  "homepage": "https://github.com/antoninotesta/lbd-phone-input",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/antoninotesta/lbd-phone-input.git"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.1",
+    "typescript": "^5.5.4"
+  }
+}
