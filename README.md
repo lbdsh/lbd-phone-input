@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://www.transfeero.com" target="_blank" rel="noopener">
-    <img src="https://transfeeropublic.s3.eu-west-1.amazonaws.com/logo_transfeero_final_white.png" alt="Transfeero" height="60" />
+    <img src="https://www.transfeero.com/wp-content/themes/tailpress-master/img/logo_transfeero_final.svg" alt="Transfeero" height="60" />
   </a>
 </p>
 
@@ -17,21 +17,25 @@ lbd-phone-input is maintained and proudly sponsored by [Transfeero](https://www.
 - [Quick start](#quick-start)
 - [Flag display modes](#flag-display-modes)
 - [Data binding & payloads](#data-binding--payloads)
+- [Light & dark mode](#light--dark-mode)
+- [Placeholders & realistic examples](#placeholders--realistic-examples)
+- [Dropdown behaviour](#dropdown-behaviour)
 - [Programmatic API](#programmatic-api)
 - [Advanced scenarios](#advanced-scenarios)
   - [Prefilling from your backend](#prefilling-from-your-backend)
   - [Multiple inputs in one shot](#multiple-inputs-in-one-shot)
   - [Listening to the custom event](#listening-to-the-custom-event)
 - [Styling & theming](#styling--theming)
+- [Framework compatibility](#framework-compatibility)
 - [Examples](#examples)
-- [Asset credits](#asset-credits)
 - [Contributing & license](#contributing--license)
 
 ## Highlights
 
 - 🌍 **Flexible flag rendering** – pick between emoji flags, a high-quality PNG sprite, or hide flags entirely via `flagDisplay`.
 - 🌗 **Adaptive theming** – switch between light, dark, or automatically follow the OS preference with one option.
-- 🔁 **Automatic sprite distribution** – ships with retina-ready assets and class mapping adapted from `intl-tel-input`.
+- 📞 **Realistic placeholders** – country-specific sample numbers help users understand the expected format instantly.
+- 🔁 **Automatic sprite distribution** – ships with retina-ready assets and a compact PNG sprite.
 - ⚡ **Instant search & keyboard accessibility** – country lookup by name, ISO code or dial code with full keyboard support.
 - 🧠 **Smart formatting** – auto-format numbers per country mask, fall back to national mode, or take control manually.
 - 🔌 **Backend-ready payloads** – keep dial code and national number in sync with hidden inputs or pull a combined E.164 string on demand.
@@ -175,6 +179,31 @@ themeToggle.addEventListener("click", () => {
 });
 ```
 
+## Placeholders & realistic examples
+
+Every country ships with a curated sample number so users instantly see a plausible pattern (`347 12 12 456` for Italy, `020 7946 0958` for the UK, etc.). When `nationalMode` is disabled the placeholder automatically prepends the international dial code.
+
+Need to override the placeholder for a specific locale? Provide your own country definition:
+
+```ts
+createPhoneInput("#support-it", {
+  countries: [
+    { iso2: "it", name: "Italy", dialCode: "+39", mask: "### ## ## ###", example: "347 99 88 111" }
+  ]
+});
+```
+
+## Dropdown behaviour
+
+By default the country picker closes immediately after selecting an option. Set `closeDropdownOnSelection` to `false` if you want to keep the list open (handy for QA or when the dial code is just a reference).
+
+```ts
+createPhoneInput("#always-open", {
+  closeDropdownOnSelection: false,
+  flagDisplay: "none"
+});
+```
+
 ## Programmatic API
 
 ```ts
@@ -187,6 +216,7 @@ controller.setCountry("us");   // switch selection
 controller.setValue({ combined: "+4479460958" }); // prefill from backend
 controller.setTheme("dark");     // force dark mode
 controller.getPayload("both"); // split payload + combined string
+detectBrowserCountry().then((iso2) => iso2 && controller.setCountry(iso2));
 controller.destroy();          // restore the original <input>
 ```
 
@@ -238,7 +268,9 @@ The distributed stylesheet is built with design tokens you can override per comp
 }
 ```
 
-Because the component is plain DOM, you can also wrap it with your favourite UI system (Tailwind, Chakra, etc.) or compose it inside Web Components.
+## Framework compatibility
+
+The component is plain DOM with namespaced styles, so you can wrap it with Bootstrap form classes or Tailwind utilities without fighting specificity. Override the CSS variables for deeper alignment, or drop it inside design systems such as Chakra, Mantine, DaisyUI, etc.
 
 ## Examples
 
@@ -254,7 +286,9 @@ Then open [`examples/basic.html`](examples/basic.html) in your browser. The play
 - Switching between emoji, sprite and flagless modes.
 - Theme toggling between light, dark and auto.
 - Two-way binding with discrete hidden inputs.
-- Programmatic updates via `setValue`/`setCountry`.
+- Headline compatibility with Bootstrap, Tailwind and bulk initialization.
+
+Looking for more? Browse [`examples/gallery.html`](examples/gallery.html) to explore every configuration side-by-side (sprite/emoji flags, dark layouts, bulk initialization, manual theme toggles).
 
 ## Contributing & license
 

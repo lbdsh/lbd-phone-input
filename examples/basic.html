@@ -237,6 +237,12 @@
       let controller = mount(flagModeSelect.value, initialValue);
       updateLog(controller.getState());
 
+      detectBrowserCountry().then((iso2) => {
+        if (iso2) {
+          controller.setCountry(iso2);
+          updateLog(controller.getState());
+        }
+      });
       phoneInput.addEventListener("phone-change", (event) => {
         console.info("phone-change", event.detail);
       });

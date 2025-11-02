@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>lbd-phone-input · Gallery</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      integrity="sha384-JmqaFJOLwObAun1vDLteA94ppIqh+apMI2vlA38nSxrdbidKfnUSsfx8bVZcZr5i"
+      crossorigin="anonymous"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../dist/styles.css" />
+    <style>
+      body {
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: linear-gradient(145deg, #f8fafc 0%, #e5e7eb 100%);
+        min-height: 100vh;
+        margin: 0;
+      }
+
+      .card-shadow {
+        box-shadow: 0 25px 60px -35px rgba(15, 23, 42, 0.3);
+      }
+
+      .tailwind-panel {
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+      }
+
+      .gallery-log {
+        height: 150px;
+        overflow-y: auto;
+        font-size: 0.85rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container py-5">
+      <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-5">
+        <div>
+          <h1 class="mb-2">lbd-phone-input Gallery</h1>
+          <p class="lead text-secondary mb-0">
+            A curated set of scenarios showing how the component behaves with sprite/emoji flags, light/dark
+            themes, national mode, Bootstrap forms and Tailwind utility layouts.
+          </p>
+        </div>
+        <a class="btn btn-outline-dark" href="https://github.com/antoninotesta/lbd-phone-input" target="_blank" rel="noreferrer">View on GitHub</a>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-lg-6">
+          <div class="card card-shadow border-0">
+            <div class="card-header bg-white py-3">
+              <h2 class="h5 mb-0">Bootstrap · Emoji flags · Auto theme</h2>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label class="form-label" for="bootstrap-basic">Primary contact</label>
+                <input id="bootstrap-basic" class="form-control" type="tel" placeholder="" autocomplete="tel" />
+              </div>
+              <p class="text-muted small mb-0">
+                Uses the system theme (`auto`) and emoji flags. Placeholder adapts to the selected country using real-looking examples.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="card card-shadow border-0">
+            <div class="card-header bg-white py-3">
+              <h2 class="h5 mb-0">Bootstrap · Sprite flags · Manual theme toggle</h2>
+            </div>
+            <div class="card-body">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div>
+                  <input id="bootstrap-sprite" class="form-control" type="tel" autocomplete="tel" />
+                </div>
+                <div>
+                  <label class="form-label mb-1" for="bootstrap-theme">Theme</label>
+                  <select id="bootstrap-theme" class="form-select form-select-sm">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                    <option value="auto">Auto</option>
+                  </select>
+                </div>
+              </div>
+              <p class="text-muted small mb-0">
+                Demonstrates sprite-based flags with retina assets and an explicit theme selector.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="tailwind-panel rounded-4 p-6 text-white h-100">
+            <h2 class="text-xl font-semibold mb-4">Tailwind · Dark layout · National mode</h2>
+            <p class="text-sm text-slate-300 mb-4">
+              Embedded inside a dark Tailwind card with `nationalMode` enabled, hidden flag, and dedicated bindings
+              syncing dial code and national number fields.
+            </p>
+            <div class="space-y-4">
+              <label class="block text-sm font-medium" for="tailwind-national">Team hotline</label>
+              <input id="tailwind-national" class="block w-full rounded-xl border border-slate-600 bg-slate-900/70 px-3 py-3 text-white" type="tel" autocomplete="tel" />
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-slate-300">
+                <div>
+                  <div class="font-semibold uppercase tracking-wide">Dial code</div>
+                  <code id="tailwind-dial">+39</code>
+                </div>
+                <div>
+                  <div class="font-semibold uppercase tracking-wide">National</div>
+                  <code id="tailwind-national-number">3471212456</code>
+                </div>
+                <div>
+                  <div class="font-semibold uppercase tracking-wide">E.164</div>
+                  <code id="tailwind-combined">+393471212456</code>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="card card-shadow border-0 h-100">
+            <div class="card-header bg-white py-3">
+              <h2 class="h5 mb-0">Event log</h2>
+            </div>
+            <div class="card-body">
+              <p class="text-muted small">
+                Every component dispatches the `phone-change` event with the hydrated payload (`dialCode`, `nationalNumber`,
+                `e164`, `theme`, `isValid`).
+              </p>
+              <pre id="gallery-log" class="border rounded-3 bg-dark text-success p-3 gallery-log">{}</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="card card-shadow border-0">
+            <div class="card-header bg-white py-3">
+              <h2 class="h5 mb-0">Bulk initialization with `createPhoneInputs`</h2>
+            </div>
+            <div class="card-body">
+              <p class="text-muted small">
+                Perfect for multi-step forms. Flags hidden, automatic formatting disabled, dropdown stays open after a selection (`closeDropdownOnSelection: false`).
+              </p>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label">Billing phone</label>
+                  <input data-bulk class="form-control" type="tel" />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Shipping phone</label>
+                  <input data-bulk class="form-control" type="tel" />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Contact phone</label>
+                  <input data-bulk class="form-control" type="tel" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { createPhoneInput, createPhoneInputs } from "../dist/index.js";
+
+      const galleryLog = document.querySelector("#gallery-log");
+      const writeLog = (label, state) => {
+        const entry = {
+          label,
+          e164: state.e164,
+          nationalNumber: state.nationalNumber,
+          dialCode: state.dialCode,
+          theme: state.theme,
+          isValid: state.isValid
+        };
+        galleryLog.textContent = `${JSON.stringify(entry, null, 2)}\n` + galleryLog.textContent;
+      };
+
+      const bootstrapBasic = createPhoneInput("#bootstrap-basic", {
+        preferredCountries: ["it", "us", "fr"],
+        flagDisplay: "emoji",
+        theme: "auto",
+        onChange: (state) => writeLog("bootstrap-basic", state)
+      });
+
+      const bootstrapSprite = createPhoneInput("#bootstrap-sprite", {
+        preferredCountries: ["gb", "de", "es"],
+        flagDisplay: "sprite",
+        theme: "light",
+        onChange: (state) => writeLog("bootstrap-sprite", state)
+      });
+
+      const themeSelect = document.querySelector("#bootstrap-theme");
+      themeSelect.addEventListener("change", (event) => {
+        bootstrapSprite.setTheme(event.target.value);
+      });
+
+      const tailwindController = createPhoneInput("#tailwind-national", {
+        flagDisplay: "none",
+        nationalMode: true,
+        theme: "dark",
+        bindings: {
+          dialCode: "#tailwind-dial",
+          nationalNumber: "#tailwind-national-number",
+          combined: "#tailwind-combined"
+        },
+        onChange: (state) => writeLog("tailwind", state)
+      });
+
+      const bulkControllers = createPhoneInputs("input[data-bulk]", {
+        flagDisplay: "none",
+        autoFormat: false,
+        closeDropdownOnSelection: false,
+        preferredCountries: ["it", "us"],
+        onChange: (state) => writeLog("bulk", state)
+      });
+
+      // Keep the bulk inputs in sync with the currently selected theme of the sprite example
+      const syncBulkTheme = () => {
+        const currentTheme = bootstrapSprite.getState().theme;
+        bulkControllers.forEach((controller) => controller.setTheme(currentTheme));
+      };
+      themeSelect.addEventListener("change", syncBulkTheme);
+    </script>
+  </body>
+</html>

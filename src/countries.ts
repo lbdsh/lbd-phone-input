@@ -19,7 +19,7 @@ const RAW_COUNTRIES: CountryDefinition[] = [
   { iso2: "fr", name: "France", dialCode: "+33", mask: "## ## ## ## ##", example: "06 12 34 56 78" },
   { iso2: "es", name: "Spain", dialCode: "+34", mask: "### ### ###", example: "612 345 678" },
   { iso2: "pt", name: "Portugal", dialCode: "+351", mask: "### ### ###", example: "912 345 678" },
-  { iso2: "it", name: "Italy", dialCode: "+39", mask: "### #######", example: "347 1234567" },
+  { iso2: "it", name: "Italy", dialCode: "+39", mask: "### ## ## ###", example: "347 12 12 456" },
   { iso2: "ch", name: "Switzerland", dialCode: "+41", mask: "## ### ## ##", example: "41 123 45 67" },
   { iso2: "at", name: "Austria", dialCode: "+43", mask: "### ### ####", example: "650 123 4567" },
   { iso2: "be", name: "Belgium", dialCode: "+32", mask: "### ## ## ##", example: "475 12 34 56" },

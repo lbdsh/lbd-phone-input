@@ -46,6 +46,7 @@ export interface PhoneInputOptions {
   flagSpriteUrl?: string;
   flagSpriteRetinaUrl?: string;
   theme?: PhoneInputTheme;
+  closeDropdownOnSelection?: boolean;
 }
 
 export interface PhoneInputState {
@@ -78,3 +79,5 @@ export interface PhoneInputController {
   format(value: string): string;
   destroy(): void;
 }
+
+export type GeolocationCountryDetector = () => Promise<string | null | undefined>;

@@ -9,7 +9,8 @@ import {
   PhoneInputOptions,
   PhoneInputState,
   SubmissionBindings,
-  PhonePayload
+  PhonePayload,
+  GeolocationCountryDetector
 } from "./types";
 import {
   buildSearchIndex,
@@ -46,6 +47,7 @@ const DEFAULT_OPTIONS: {
   flagSpriteUrl: string;
   flagSpriteRetinaUrl: string;
   theme: PhoneInputTheme;
+  closeDropdownOnSelection: boolean;
 } = {
   countries: DEFAULT_COUNTRIES,
   preferredCountries: ["it", "us", "gb", "fr", "de"],
@@ -61,7 +63,8 @@ const DEFAULT_OPTIONS: {
   flagDisplay: "emoji",
   flagSpriteUrl: "",
   flagSpriteRetinaUrl: "",
-  theme: "auto"
+  theme: "auto",
+  closeDropdownOnSelection: true
 };
 
 type ResolvedOptions = PhoneInputOptions & typeof DEFAULT_OPTIONS;
@@ -487,6 +490,13 @@ class VanillaPhoneInput implements PhoneInputController {
     this.highlightActiveOption();
     this.applyPlaceholder();
     this.commitFormattedValue();
+
+    if (
+      this.options.closeDropdownOnSelection !== false &&
+      this.dropdown.classList.contains(DROPDOWN_VISIBLE_CLASS)
+    ) {
+      this.closeDropdown();
+    }
   }
 
   public getState(): PhoneInputState {
@@ -534,6 +544,7 @@ class VanillaPhoneInput implements PhoneInputController {
     this.selectorButton.remove();
     this.wrapper.replaceWith(this.input);
     this.input.classList.remove(`${COMPONENT_CLASS}__input`);
+    this.isReady = false;
   }
 
   private buildStructure(): void {
@@ -591,7 +602,9 @@ class VanillaPhoneInput implements PhoneInputController {
       const iso2 = option.dataset.iso2;
       if (iso2) {
         this.setCountry(iso2);
-        this.closeDropdown();
+        if (this.options.closeDropdownOnSelection !== false) {
+          this.closeDropdown();
+        }
         this.input.focus();
       }
     };
@@ -630,7 +643,9 @@ class VanillaPhoneInput implements PhoneInputController {
         const iso = current.dataset.iso2;
         if (iso) {
           this.setCountry(iso);
-          this.closeDropdown();
+          if (this.options.closeDropdownOnSelection !== false) {
+            this.closeDropdown();
+          }
           this.input.focus();
         }
       };
@@ -797,8 +812,23 @@ class VanillaPhoneInput implements PhoneInputController {
     if (!this.options.smartPlaceholder) {
       return;
     }
-    const placeholder = this.selectedCountry.example ?? "";
-    this.input.placeholder = placeholder;
+    const example = (this.selectedCountry.example ?? "").trim();
+
+    if (!example) {
+      this.input.placeholder = "";
+      return;
+    }
+
+    if (this.options.nationalMode) {
+      this.input.placeholder = example;
+      return;
+    }
+
+    const withDialCode = example.startsWith("+")
+      ? example
+      : `${this.selectedCountry.dialCode} ${example}`;
+
+    this.input.placeholder = withDialCode.replace(/\s+/g, " ").trim();
   }
 
   private normalizeValue(): void {
@@ -899,6 +929,26 @@ export const createPhoneInputs = (
   return Array.from(document.querySelectorAll<HTMLInputElement>(selector)).map((input) =>
     createPhoneInput(input, options)
   );
+};
+
+export const detectBrowserCountry: GeolocationCountryDetector = async () => {
+  if (typeof navigator === "undefined") {
+    return null;
+  }
+
+  try {
+    const nav = navigator as Navigator & { language?: string; languages?: readonly string[] };
+    const candidate = nav.language || (Array.isArray(nav.languages) ? nav.languages[0] : undefined);
+    if (!candidate) {
+      return null;
+    }
+    const parts = candidate.toLowerCase().split(/[-_]/);
+    const iso = parts.length > 1 ? parts[1] : parts[0];
+    return iso ? iso.slice(0, 2) : null;
+  } catch (error) {
+    console.warn("PhoneInput: unable to detect browser country", error);
+    return null;
+  }
 };
 
 export * from "./types";
