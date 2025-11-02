@@ -43,10 +43,10 @@
   ],
   "author": "Antonino Testa",
   "license": "MIT",
-  "homepage": "https://github.com/antoninotesta/lbd-phone-input",
+  "homepage": "https://github.com/lbdsh/lbd-phone-input",
   "repository": {
     "type": "git",
-    "url": "https://github.com/antoninotesta/lbd-phone-input.git"
+    "url": "https://github.com/lbdsh/lbd-phone-input.git"
   },
   "engines": {
     "node": ">=18"

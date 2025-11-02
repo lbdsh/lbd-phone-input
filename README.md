@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://www.transfeero.com" target="_blank" rel="noopener">
-    <img src="https://www.transfeero.com/wp-content/themes/tailpress-master/img/logo_transfeero_final.svg" alt="Transfeero" height="60" />
+    <img src="https://transfeeropublic.s3.eu-west-1.amazonaws.com/logo_transfeero_final_white.png" alt="Transfeero" height="60" />
   </a>
 </p>
 
