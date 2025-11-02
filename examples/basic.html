@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -8,224 +7,264 @@
     <link rel="stylesheet" href="../dist/styles.css" />
     <style>
       :root {
-        color-scheme: light;
-            }
+        color-scheme: light dark;
+      }
+
       body {
         font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-        background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
         min-height: 100vh;
         margin: 0;
+        background: radial-gradient(circle at top, #f4f7fb, #dbeafe);
         padding: 5vw;
-        color: #0f172a;
-      }
-      main {
-        max-width: 720px;
-        margin: 0 auto;
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(18px);
-        border-radius: 26px;
-        border: 1px solid rgba(15, 23, 42, 0.08);
-        padding: 48px;
-        box-shadow: 0 45px 90px -48px rgba(15, 23, 42, 0.48);
-      }
-      h1 {
-        margin-top: 0;
-        font-size: 2.5rem;
-        line-height: 1.1;
-      }
-      p {
-        margin-bottom: 1.75rem;
-      }
-      .controls {
-        display: grid;
-        gap: 1rem;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        margin-bottom: 1.5rem;
-      }
-      label.field,
-      .controls label {
         display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
+        justify-content: center;
+      }
+
+      .playground {
+        width: min(960px, 100%);
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 30px;
+        padding: 48px;
+        box-shadow: 0 40px 120px -48px rgba(15, 23, 42, 0.4);
+        display: grid;
+        gap: 36px;
+      }
+
+      .playground[data-theme="dark"] {
+        background: rgba(15, 23, 42, 0.92);
+        color: #f8fafc;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2rem, 3vw + 1rem, 3rem);
+      }
+
+      .grid {
+        display: grid;
+        gap: 18px;
+      }
+
+      .grid-advanced {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      }
+
+      label span {
+        display: block;
         font-weight: 600;
-        letter-spacing: 0.01em;
+        margin-bottom: 6px;
       }
+
       select,
-      .controls input[type="checkbox"] {
-        font: inherit;
-      }
-      select {
+      input[type="text"],
+      button {
+        width: 100%;
+        padding: 10px 14px;
         border-radius: 12px;
         border: 1px solid rgba(15, 23, 42, 0.12);
-        padding: 0.65rem 0.75rem;
         background: rgba(255, 255, 255, 0.9);
+        font: inherit;
       }
-      .bindings {
-        margin-top: 2.5rem;
-        display: grid;
-        gap: 1.4rem;
+
+      .playground[data-theme="dark"] select,
+      .playground[data-theme="dark"] input[type="text"],
+      .playground[data-theme="dark"] button {
+        background: rgba(15, 23, 42, 0.6);
+        border-color: rgba(148, 163, 184, 0.35);
+        color: inherit;
       }
-      .binding-grid {
+
+      .switches {
         display: grid;
-        gap: 0.85rem;
+        gap: 10px;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       }
-      .binding-grid label {
-        gap: 0.5rem;
-        letter-spacing: 0.01em;
+
+      .switch {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        background: rgba(148, 163, 184, 0.12);
+        padding: 10px 12px;
+        border-radius: 12px;
+        font-size: 0.92rem;
       }
-      .binding-grid input {
-        padding: 0.6rem 0.75rem;
-        border-radius: 10px;
-        border: 1px solid rgba(15, 23, 42, 0.14);
-        background: rgba(255, 255, 255, 0.92);
-        font-weight: 500;
+
+      .playground[data-theme="dark"] .switch {
+        background: rgba(30, 41, 59, 0.6);
       }
-      .binding-grid input[readonly] {
-        color: #0f172a;
+
+      .split {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       }
+
       pre {
         background: #0f172a;
-        color: #f1f5f9;
-        border-radius: 14px;
-        padding: 1rem 1.25rem;
+        color: #cbd5f5;
+        border-radius: 16px;
+        padding: 16px;
         overflow-x: auto;
-        margin: 2rem 0 0;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
+        margin: 0;
       }
-      footer {
-        margin-top: 2.5rem;
-        font-size: 0.9rem;
-        color: rgba(15, 23, 42, 0.7);
+
+      .actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
       }
-      footer a {
-        color: inherit;
-        font-weight: 600;
-        text-decoration: none;
-        border-bottom: 1px solid currentColor;
+
+      button.primary {
+        background: #4f46e5;
+        color: white;
+        border: none;
       }
-      @media (max-width: 640px) {
-        main {
-          padding: 32px;
-        }
+
+      button.secondary {
+        background: rgba(148, 163, 184, 0.18);
       }
     </style>
   </head>
   <body>
-    <main>
-      <h1>lbd-phone-input playground</h1>
-      <p>
-        Experiment with flag display modes, backend bindings and smart formatting. Change the
-        configuration and watch the synchronized values update in real time.
-      </p>
-      <section class="controls">
-        <label>
-          Flag display mode
-          <select id="flag-mode">
-            <option value="sprite">Sprite (PNG)</option>
-            <option value="emoji">Emoji</option>
-            <option value="none">Hide flag</option>
-          </select>
-        </label>
-        <label>
-          Theme
-          <select id="theme-mode">
-            <option value="auto">Auto (system)</option>
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-          </select>
-        </label>
-        <label>
-          <span>Language</span>
-          <select id="language-mode">
-            <option value="auto">Auto detect</option>
-            <option value="en">English</option>
-            <option value="it">Italiano</option>
-            <option value="es">Español</option>
-            <option value="fr">Français</option>
-            <option value="de">Deutsch</option>
-            <option value="pt">Português</option>
-            <option value="ru">Русский</option>
-            <option value="zh">中文</option>
-            <option value="ja">日本語</option>
-            <option value="ar">العربية</option>
-          </select>
-        </label>
-        <label class="checkbox">
-          <input type="checkbox" id="national-mode" checked /> National mode
-        </label>
-        <label class="checkbox">
-          <input type="checkbox" id="auto-format" checked /> Auto format
-        </label>
-        <label class="checkbox">
-          <input type="checkbox" id="smart-placeholder" checked /> Smart placeholder
-        </label>
-        <label class="checkbox">
-          <input type="checkbox" id="close-on-select" checked /> Close on selection
-        </label>
-        <fieldset class="pref">
-          <legend>Preferred countries</legend>
-          <label><input type="checkbox" class="pref-check" value="it" checked /> Italy</label>
-          <label><input type="checkbox" class="pref-check" value="us" checked /> United States</label>
-          <label><input type="checkbox" class="pref-check" value="gb" /> United Kingdom</label>
-          <label><input type="checkbox" class="pref-check" value="fr" /> France</label>
-          <label><input type="checkbox" class="pref-check" value="de" /> Germany</label>
-        </fieldset>
-        <button id="reset-options" type="button">Reset configuration</button>
+    <main class="playground" data-theme="auto">
+      <section class="grid" aria-labelledby="intro">
+        <h1 id="intro">lbd-phone-input playground</h1>
+        <p>
+          Experiment with every option exposed by <code>createPhoneInput</code>. Toggle settings below and
+          watch the component, bindings, and event payload update in real-time.
+        </p>
       </section>
-      <label class="field">
-        Phone number
-        <input id="demo-phone" type="tel" autocomplete="tel" />
-      </label>
-      <section class="bindings">
-        <h2>Synced payload</h2>
-        <div class="binding-grid">
+
+      <section class="grid" aria-labelledby="controls">
+        <h2 id="controls">Configuration</h2>
+        <div class="grid-advanced">
           <label>
-            Dial code
+            <span>Flag display</span>
+            <select id="flag-mode">
+              <option value="sprite">Sprite (PNG)</option>
+              <option value="emoji">Emoji</option>
+              <option value="none">Hide flag</option>
+            </select>
+          </label>
+          <label>
+            <span>Theme</span>
+            <select id="theme-mode">
+              <option value="auto">Auto (system)</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </label>
+          <label>
+            <span>Language</span>
+            <select id="language-mode">
+              <option value="auto">Auto detect</option>
+              <option value="en">English</option>
+              <option value="it">Italiano</option>
+              <option value="es">Español</option>
+              <option value="fr">Français</option>
+              <option value="de">Deutsch</option>
+              <option value="pt">Português</option>
+              <option value="ru">Русский</option>
+              <option value="zh">中文</option>
+              <option value="ja">日本語</option>
+              <option value="ar">العربية</option>
+            </select>
+          </label>
+          <label>
+            <span>Preferred countries (comma separated ISO2)</span>
+            <input id="preferred-list" type="text" value="it,us,gb" />
+          </label>
+        </div>
+        <div class="switches">
+          <label class="switch">
+            <input type="checkbox" id="national-mode" />
+            <span>National mode</span>
+          </label>
+          <label class="switch">
+            <input type="checkbox" id="auto-format" checked />
+            <span>Auto format</span>
+          </label>
+          <label class="switch">
+            <input type="checkbox" id="smart-placeholder" checked />
+            <span>Smart placeholder</span>
+          </label>
+          <label class="switch">
+            <input type="checkbox" id="close-on-select" checked />
+            <span>Close dropdown on selection</span>
+          </label>
+        </div>
+        <div class="actions">
+          <button id="reset-options" type="button" class="secondary">Reset configuration</button>
+          <button id="prefill-gb" type="button" class="primary">Prefill +44 20 7946 0958</button>
+          <button id="clear-input" type="button" class="secondary">Clear</button>
+        </div>
+      </section>
+
+      <section class="grid" aria-labelledby="demo">
+        <h2 id="demo">Live widget</h2>
+        <label class="grid">
+          <span>Phone number</span>
+          <input id="demo-phone" type="tel" autocomplete="tel" />
+        </label>
+        <div class="split">
+          <label>
+            <span>Dial code (binding)</span>
             <input id="binding-dial" readonly />
           </label>
           <label>
-            National number
+            <span>National number (binding)</span>
             <input id="binding-number" readonly />
           </label>
           <label>
-            E.164 / combined
+            <span>E.164 / combined (binding)</span>
             <input id="binding-combined" readonly />
           </label>
         </div>
       </section>
-      <pre id="log">{}</pre>
-      <footer>
-        Sponsored by
-        <a href="https://www.transfeero.com" target="_blank" rel="noreferrer noopener"
-          >Transfeero</a
-        >
-      </footer>
+
+      <section class="grid" aria-labelledby="payload">
+        <h2 id="payload">Event payload</h2>
+        <pre id="log">{}</pre>
+      </section>
     </main>
-                <script type="module">
+
+    <script type="module">
       import { createPhoneInput, detectBrowserCountry } from "../dist/index.js";
 
       const phoneInput = document.querySelector("#demo-phone");
       const flagModeSelect = document.querySelector("#flag-mode");
       const themeModeSelect = document.querySelector("#theme-mode");
-      const languageSelect = document.querySelector("#language-mode");
+      const languageModeSelect = document.querySelector("#language-mode");
+      const preferredListInput = document.querySelector("#preferred-list");
       const nationalModeToggle = document.querySelector("#national-mode");
       const autoFormatToggle = document.querySelector("#auto-format");
       const smartPlaceholderToggle = document.querySelector("#smart-placeholder");
       const closeOnSelectToggle = document.querySelector("#close-on-select");
-      const preferredCheckboxes = Array.from(document.querySelectorAll(".pref-check"));
       const resetButton = document.querySelector("#reset-options");
+      const prefillGbButton = document.querySelector("#prefill-gb");
+      const clearButton = document.querySelector("#clear-input");
       const bindingDial = document.querySelector("#binding-dial");
       const bindingNumber = document.querySelector("#binding-number");
       const bindingCombined = document.querySelector("#binding-combined");
       const log = document.querySelector("#log");
+      const playground = document.querySelector(".playground");
 
-      const defaultPreferred = ["it", "us"];
-
-      const initialValue = {
-        dialCode: "+39",
-        nationalNumber: "3471234567"
+      const defaultState = {
+        flagDisplay: "sprite",
+        theme: "auto",
+        language: undefined,
+        preferredCountries: ["it", "us", "gb"],
+        nationalMode: false,
+        autoFormat: true,
+        smartPlaceholder: true,
+        closeDropdownOnSelection: true
       };
+
+      const state = { ...defaultState };
 
       const sharedOptions = {
         bindings: {
@@ -236,23 +275,16 @@
         preventInvalidDialCode: true
       };
 
-      function getPreferredCountries() {
-        const selected = preferredCheckboxes
-          .filter((checkbox) => checkbox.checked)
-          .map((checkbox) => checkbox.value);
-        return selected.length ? selected : defaultPreferred;
+      function parsePreferred(text) {
+        return text
+          .split(/[,\s]+/)
+          .map((item) => item.trim().toLowerCase())
+          .filter(Boolean);
       }
 
-      function getDynamicOptions() {
-        const language = languageSelect.value === "auto" ? undefined : languageSelect.value;
-        return {
-          preferredCountries: getPreferredCountries(),
-          nationalMode: nationalModeToggle.checked,
-          autoFormat: autoFormatToggle.checked,
-          smartPlaceholder: smartPlaceholderToggle.checked,
-          closeDropdownOnSelection: closeOnSelectToggle.checked,
-          language
-        };
+      function applyTheme(theme) {
+        playground.dataset.theme = theme;
+        document.body.dataset.theme = theme;
       }
 
       function updateLog(state) {
@@ -273,32 +305,40 @@
         );
       }
 
-      function mount(flagDisplay, value) {
-        const ctrl = createPhoneInput(phoneInput, {
+      let controller;
+
+      function mount(value) {
+        controller = createPhoneInput(phoneInput, {
           ...sharedOptions,
-          ...getDynamicOptions(),
-          flagDisplay,
-          theme: themeModeSelect.value,
+          flagDisplay: state.flagDisplay,
+          preferredCountries: state.preferredCountries,
+          nationalMode: state.nationalMode,
+          autoFormat: state.autoFormat,
+          smartPlaceholder: state.smartPlaceholder,
+          closeDropdownOnSelection: state.closeDropdownOnSelection,
+          language: state.language,
+          theme: state.theme,
           value,
           onChange: updateLog
         });
-        ctrl.setTheme(themeModeSelect.value);
-        return ctrl;
-      }
-
-      function rebuild() {
-        const currentState = controller.getState();
-        controller.destroy();
-        controller = mount(flagModeSelect.value, {
-          dialCode: currentState.dialCode,
-          nationalNumber: currentState.nationalNumber,
-          combined: currentState.e164 || currentState.formattedValue
-        });
+        controller.setTheme(state.theme);
+        applyTheme(state.theme);
         updateLog(controller.getState());
       }
 
-      let controller = mount(flagModeSelect.value, initialValue);
-      updateLog(controller.getState());
+      function remount(preserveValue = true) {
+        const snapshot = preserveValue
+          ? {
+              dialCode: controller.getDialCode(),
+              nationalNumber: controller.getState().nationalNumber,
+              combined: controller.getState().e164 || controller.getState().formattedValue
+            }
+          : undefined;
+        controller.destroy();
+        mount(snapshot);
+      }
+
+      mount({ dialCode: "+39", nationalNumber: "3471234567" });
 
       detectBrowserCountry().then((iso2) => {
         if (iso2) {
@@ -307,49 +347,70 @@
         }
       });
 
-      document.body.dataset.theme = themeModeSelect.value;
-
-      phoneInput.addEventListener("phone-change", (event) => {
-        console.info("phone-change", event.detail);
+      flagModeSelect.addEventListener("change", (event) => {
+        state.flagDisplay = event.target.value;
+        remount();
       });
-
-      flagModeSelect.addEventListener("change", rebuild);
 
       themeModeSelect.addEventListener("change", (event) => {
-        controller.setTheme(event.target.value);
-        document.body.dataset.theme = event.target.value;
+        state.theme = event.target.value;
+        controller.setTheme(state.theme);
+        applyTheme(state.theme);
         updateLog(controller.getState());
       });
 
-      nationalModeToggle.addEventListener("change", rebuild);
-      autoFormatToggle.addEventListener("change", rebuild);
-      smartPlaceholderToggle.addEventListener("change", rebuild);
-      closeOnSelectToggle.addEventListener("change", rebuild);
-      languageSelect.addEventListener("change", rebuild);
-      preferredCheckboxes.forEach((checkbox) => checkbox.addEventListener("change", rebuild));
+      languageModeSelect.addEventListener("change", (event) => {
+        state.language = event.target.value === "auto" ? undefined : event.target.value;
+        remount();
+      });
+
+      preferredListInput.addEventListener("blur", (event) => {
+        const parsed = parsePreferred(event.target.value);
+        if (!parsed.length) {
+          event.target.value = defaultState.preferredCountries.join(", ");
+          state.preferredCountries = [...defaultState.preferredCountries];
+        } else {
+          state.preferredCountries = parsed;
+        }
+        remount();
+      });
+
+      [
+        [nationalModeToggle, "nationalMode"],
+        [autoFormatToggle, "autoFormat"],
+        [smartPlaceholderToggle, "smartPlaceholder"],
+        [closeOnSelectToggle, "closeDropdownOnSelection"]
+      ].forEach(([toggle, key]) => {
+        toggle.addEventListener("change", () => {
+          state[key] = toggle.checked;
+          remount();
+        });
+      });
 
       resetButton.addEventListener("click", () => {
-        flagModeSelect.value = "sprite";
-        themeModeSelect.value = "auto";
-        languageSelect.value = "auto";
-        nationalModeToggle.checked = true;
-        autoFormatToggle.checked = true;
-        smartPlaceholderToggle.checked = true;
-        closeOnSelectToggle.checked = true;
-        preferredCheckboxes.forEach((checkbox) => {
-          checkbox.checked = defaultPreferred.includes(checkbox.value);
-        });
-        document.body.dataset.theme = themeModeSelect.value;
-        controller.destroy();
-        controller = mount(flagModeSelect.value, initialValue);
+        Object.assign(state, defaultState);
+        flagModeSelect.value = state.flagDisplay;
+        themeModeSelect.value = state.theme;
+        languageModeSelect.value = "auto";
+        preferredListInput.value = state.preferredCountries.join(", ");
+        nationalModeToggle.checked = state.nationalMode;
+        autoFormatToggle.checked = state.autoFormat;
+        smartPlaceholderToggle.checked = state.smartPlaceholder;
+        closeOnSelectToggle.checked = state.closeDropdownOnSelection;
+        remount(false);
+      });
+
+      prefillGbButton.addEventListener("click", () => {
+        controller.setCountry("gb");
+        controller.setValue({ combined: "+442079460958" });
         updateLog(controller.getState());
       });
 
-      setTimeout(() => {
-        controller.setValue({ combined: "+442079460958" });
-        controller.setCountry("gb");
+      clearButton.addEventListener("click", () => {
+        controller.setValue({ dialCode: controller.getDialCode(), nationalNumber: "" });
+        bindingCombined.value = "";
         updateLog(controller.getState());
-      }, 4500);
+      });
     </script>
   </body>
 </html>

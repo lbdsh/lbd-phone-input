@@ -31,7 +31,8 @@
   "scripts": {
     "build": "tsup src/index.ts src/styles.css --format esm,cjs --dts --out-dir dist --minify --clean",
     "postbuild": "node ./scripts/postbuild.mjs",
-    "dev": "tsup src/index.ts src/styles.css --format esm --dts --out-dir dist --watch --minify --onSuccess \"node ./scripts/postbuild.mjs\""
+    "dev": "tsup src/index.ts src/styles.css --format esm --dts --out-dir dist --watch --minify --onSuccess \"node ./scripts/postbuild.mjs\"",
+    "test": "vitest run"
   },
   "keywords": [
     "phone",
@@ -52,7 +53,9 @@
     "node": ">=18"
   },
   "devDependencies": {
-    "tsup": "^8.0.1",
-    "typescript": "^5.5.4"
+    "happy-dom": "^9.20.3",
+     "tsup": "^8.0.1",
+    "typescript": "^5.5.4",
+    "vitest": "^1.5.3"
   }
 }

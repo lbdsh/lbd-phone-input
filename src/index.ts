@@ -536,6 +536,10 @@ class VanillaPhoneInput implements PhoneInputController {
     this.applyPlaceholder();
     this.commitFormattedValue();
 
+    if (!this.input.value) {
+      this.syncBindings(this.getState());
+    }
+
     if (
       this.options.closeDropdownOnSelection !== false &&
       this.dropdown.classList.contains(DROPDOWN_VISIBLE_CLASS)
@@ -546,7 +550,11 @@ class VanillaPhoneInput implements PhoneInputController {
 
   public getState(): PhoneInputState {
     const displayValue = this.input.value;
-    const nationalDigits = extractDigits(displayValue);
+    const rawDigits = extractDigits(displayValue);
+    const dialDigits = extractDigits(this.selectedCountry.dialCode);
+    const nationalDigits = rawDigits.startsWith(dialDigits)
+      ? rawDigits.slice(dialDigits.length)
+      : rawDigits;
     const formattedNational = this.options.autoFormat
       ? formatWithMask(this.selectedCountry.mask ?? "", nationalDigits)
       : nationalDigits;
@@ -916,8 +924,12 @@ class VanillaPhoneInput implements PhoneInputController {
       return;
     }
 
-    const digits = extractDigits(this.input.value);
-    const displayValue = formatWithMask(this.selectedCountry.mask ?? "", digits);
+    const rawDigits = extractDigits(this.input.value);
+    const dialDigits = extractDigits(this.selectedCountry.dialCode);
+    const nationalDigits = rawDigits.startsWith(dialDigits)
+      ? rawDigits.slice(dialDigits.length)
+      : rawDigits;
+    const displayValue = formatWithMask(this.selectedCountry.mask ?? "", nationalDigits);
 
     if (displayValue === this.lastCommittedValue) {
       return;
