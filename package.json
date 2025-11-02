@@ -1,6 +1,6 @@
 {
   "name": "lbd-phone-input",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "Accessible, framework-agnostic phone input with country code selector and formatting utilities.",
   "type": "module",
   "main": "dist/index.cjs",
@@ -54,7 +54,7 @@
   },
   "devDependencies": {
     "happy-dom": "^9.20.3",
-     "tsup": "^8.0.1",
+    "tsup": "^8.0.1",
     "typescript": "^5.5.4",
     "vitest": "^1.5.3"
   }
