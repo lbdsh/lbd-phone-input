@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://www.transfeero.com" target="_blank" rel="noopener">
-    <img src="https://transfeeropublic.s3.eu-west-1.amazonaws.com/logo_transfeero_final_white.png" alt="Transfeero" height="60" />
+    <img src="https://transfeeropublic.s3.eu-west-1.amazonaws.com/logo_transfeero_final_black.png" alt="Transfeero" height="60" />
   </a>
 </p>
 
@@ -51,11 +51,11 @@ lbd-phone-input ships as a zero-dependency TypeScript module. It embraces progre
 ## Installation
 
 ```bash
-npm install lbd-phone-input
+npm install @lbd-sh/lbd-phone-input
 # or
-yarn add lbd-phone-input
+yarn add @lbd-sh/lbd-phone-input
 # or
-pnpm add lbd-phone-input
+pnpm add @lbd-sh/lbd-phone-input
 ```
 
 Requires Node 18+ for local tooling and modern browsers (ES2020).
@@ -83,7 +83,7 @@ Requires Node 18+ for local tooling and modern browsers (ES2020).
     <input type="hidden" id="full" name="full_number" />
 
     <script type="module">
-      import { createPhoneInput, detectBrowserCountry } from "lbd-phone-input";
+      import { createPhoneInput, detectBrowserCountry } from "@lbd-sh/lbd-phone-input";
 
       const controller = createPhoneInput("#phone", {
         preferredCountries: ["it", "gb", "us"],
@@ -228,7 +228,7 @@ document.querySelector("#checkout-phone").addEventListener("phone-change", ({ de
 ### Bulk initialization
 
 ```ts
-import { createPhoneInputs } from "lbd-phone-input";
+import { createPhoneInputs } from "@lbd-sh/lbd-phone-input";
 
 createPhoneInputs('input[data-phone="true"]', {
   flagDisplay: "none",
@@ -450,7 +450,7 @@ export class PhoneInputDirective implements OnInit, OnDestroy {
 
 ```ts
 import { onMounted, onBeforeUnmount, ref } from "vue";
-import { createPhoneInput, type PhoneInputController } from "lbd-phone-input";
+import { createPhoneInput, type PhoneInputController } from "@lbd-sh/lbd-phone-input";
 import "lbd-phone-input/dist/styles.css";
 
 export default {
