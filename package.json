@@ -1,6 +1,6 @@
 {
   "name": "@lbd-sh/lbd-phone-input",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Accessible, framework-agnostic phone input with country code selector and formatting utilities.",
   "type": "module",
   "main": "dist/index.cjs",
