@@ -66,6 +66,36 @@ describe("lbd-phone-input", () => {
     expect(payload.nationalNumber).toBe("2079460958");
   });
 
+  it("keeps the dial code out of the visible input when prefilling", () => {
+    document.body.innerHTML = `
+      <input id="phone" type="tel" />
+    `;
+
+    controller = createPhoneInput("#phone", {
+      autoFormat: true
+    });
+
+    const input = document.querySelector<HTMLInputElement>("#phone")!;
+    controller.setValue({ combined: "+442079460958" });
+    const digitsOnly = input.value.replace(/\D/g, "");
+    expect(digitsOnly).toBe("2079460958");
+  });
+
+  it("keeps the dial code out of the input when autoFormat is disabled", () => {
+    document.body.innerHTML = `
+      <input id="phone" type="tel" />
+    `;
+
+    controller = createPhoneInput("#phone", {
+      autoFormat: false
+    });
+
+    const input = document.querySelector<HTMLInputElement>("#phone")!;
+    controller.setValue({ combined: "+442079460958" });
+    const digitsOnly = input.value.replace(/\D/g, "");
+    expect(digitsOnly).toBe("2079460958");
+  });
+
   it("updates placeholder when country changes", () => {
     document.body.innerHTML = `
       <input id="phone" type="tel" />

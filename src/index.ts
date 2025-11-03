@@ -445,10 +445,10 @@ class VanillaPhoneInput implements PhoneInputController {
 
     if (this.options.nationalMode) {
       this.input.value = nationalNumber || existingInput || "";
-    } else if (providedCombined) {
-      this.input.value = providedCombined;
     } else if (nationalNumber) {
-      this.input.value = `${normalizedDial} ${nationalNumber}`.trim();
+      this.input.value = nationalNumber;
+    } else if (providedCombined) {
+      this.input.value = splitNumber(providedCombined, country).nationalNumber || "";
     } else if (existingInput) {
       this.input.value = existingInput;
     } else if (providedDial) {

@@ -15,6 +15,11 @@
   --lbd-input-placeholder: rgba(107, 114, 128, 0.7);
   --lbd-search-bg: #f9fafb;
   --lbd-search-border: rgba(17, 24, 39, 0.12);
+  --lbd-input-padding-y: 0.75rem;
+  --lbd-input-padding-x: 1rem;
+  --lbd-selector-padding-x: 0.875rem;
+  --lbd-selector-gap: 0.5rem;
+  --lbd-font-size: 1rem;
 
   position: relative;
   display: inline-flex;
@@ -23,6 +28,7 @@
   border: 1px solid var(--lbd-border-color);
   border-radius: var(--lbd-border-radius);
   font-family: var(--lbd-font-family);
+  font-size: var(--lbd-font-size);
   color: var(--lbd-text-color);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -49,11 +55,14 @@
 .lbd-phone-input__selector {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--lbd-selector-gap);
   background: transparent;
   border: none;
-  padding: 0 0.875rem;
-  font-size: 0.95rem;
+  padding: var(--lbd-input-padding-y) var(--lbd-selector-padding-x);
+  font: inherit;
+  line-height: 1;
+  box-sizing: border-box;
+  height: 100%;
   color: inherit;
   cursor: pointer;
   border-right: 1px solid var(--lbd-border-color);
@@ -77,7 +86,14 @@
 
 .lbd-phone-input--no-flag .lbd-phone-input__selector {
   gap: 0.25rem;
-  padding-left: 1rem;
+  padding-left: var(--lbd-input-padding-x);
+  padding-right: var(--lbd-input-padding-x);
+}
+
+.lbd-phone-input__selector > span {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
 }
 
 .lbd-phone-input__selector-flag {
@@ -88,6 +104,7 @@
 .lbd-phone-input__selector-dial {
   font-weight: 600;
   letter-spacing: 0.02em;
+  line-height: 1;
 }
 
 .lbd-phone-input__input {
@@ -96,11 +113,13 @@
   background-color: var(--lbd-input-bg);
   color: var(--lbd-text-color);
   caret-color: var(--lbd-text-color);
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
+  padding: var(--lbd-input-padding-y) var(--lbd-input-padding-x);
+  font: inherit;
   border-top-right-radius: inherit;
   border-bottom-right-radius: inherit;
   transition: background-color 0.2s ease, color 0.2s ease;
+  line-height: 1.3;
+  box-sizing: border-box;
 }
 
 .lbd-phone-input__input::placeholder {

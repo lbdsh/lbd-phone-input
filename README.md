@@ -333,6 +333,10 @@ Need another locale? Provide overrides for all the fields in `PhoneInputTranslat
 | `--lbd-search-bg` / `--lbd-search-border` | Dropdown search field styling |
 | `--lbd-option-hover` | Option hover color |
 | `--lbd-flag-sprite-url` / `--lbd-flag-sprite-2x-url` | Sprite references |
+| `--lbd-font-size` | Base font size for the widget |
+| `--lbd-input-padding-y` / `--lbd-input-padding-x` | Input vertical / horizontal padding |
+| `--lbd-selector-padding-x` | Country selector horizontal padding |
+| `--lbd-selector-gap` | Space between flag and dial code |
 
 ```css
 .lbd-phone-input {
@@ -340,6 +344,7 @@ Need another locale? Provide overrides for all the fields in `PhoneInputTranslat
   --lbd-border-color: rgba(15, 23, 42, 0.12);
   --lbd-bg: #f8fafc;
   --lbd-text-color: #0f172a;
+  --lbd-input-padding-y: 1rem; /* keeps both selector and text field vertically aligned */
 }
 ```
 
