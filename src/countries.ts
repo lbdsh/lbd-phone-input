@@ -14,6 +14,7 @@ const RAW_COUNTRIES: CountryDefinition[] = [
   { iso2: "bo", name: "Bolivia", dialCode: "+591", mask: "# #### ####", example: "2 2123 4567" },
   { iso2: "py", name: "Paraguay", dialCode: "+595", mask: "### ######", example: "981 123456" },
   { iso2: "pr", name: "Puerto Rico", dialCode: "+1", mask: "(###) ###-####", example: "(787) 555-3456" },
+  { iso2: "gp", name: "Guadeloupe", dialCode: "+590", mask: "#### ## ## ##", example: "0690 12 34 56" },
   { iso2: "gb", name: "United Kingdom", dialCode: "+44", mask: "#### ######", example: "020 7946 0958" },
   { iso2: "ie", name: "Ireland", dialCode: "+353", mask: "## ### ####", example: "21 234 5678" },
   { iso2: "fr", name: "France", dialCode: "+33", mask: "## ## ## ## ##", example: "06 12 34 56 78" },
