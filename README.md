@@ -10,7 +10,7 @@
 
 lbd-phone-input is maintained and proudly sponsored by [Transfeero](https://www.transfeero.com), the premium airport transfer platform.
 
----
+--- 
 
 ## Table of contents
 
